@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Kike's 50s - Reto 3</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Retro Press Start 2P -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #0d0614;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    /* Respetar las safe areas de móviles al mínimo */
+    .safe-padding {
+      padding-top: max(0.1rem, env(safe-area-inset-top));
+      padding-bottom: max(0.1rem, env(safe-area-inset-bottom));
+      padding-left: max(0.1rem, env(safe-area-inset-left));
+      padding-right: max(0.1rem, env(safe-area-inset-right));
+    }
+
+    .retro-btn {
+      box-shadow: 0 3px 0 #666, 0 4px 6px rgba(0,0,0,0.5);
+      transition: transform 0.05s, box-shadow 0.05s;
+    }
+
+    .retro-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #666, 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .glow-text {
+      text-shadow: 0 0 10px currentColor;
+    }
+
+    /* Estilos Neón Cyberpunk / Retro Arcade para Botones Direccionales */
+    .neon-btn {
+      background: linear-gradient(180deg, #18182b 0%, #0a0a16 100%);
+      border: 2px solid var(--neon-border, #06b6d4);
+      box-shadow: 0 0 8px var(--neon-glow, rgba(6, 182, 212, 0.4)), inset 0 0 6px var(--neon-glow, rgba(6, 182, 212, 0.2));
+      text-shadow: 0 0 8px currentColor;
+      transition: all 0.08s ease-in-out;
+    }
+
+    .neon-btn:active {
+      transform: scale(0.94) translateY(2px);
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.8), inset 0 0 12px rgba(236, 72, 153, 0.5);
+      border-color: #ec4899;
+      color: #ec4899 !important;
+    }
+
+    .no-scroll {
+      overscroll-behavior: none;
+    }
+
+    /* Efecto Flash Neón Synthwave */
+    @keyframes neonFlash {
+      0% { opacity: 1; filter: brightness(2.5) contrast(1.5); }
+      100% { opacity: 0; filter: brightness(1); }
+    }
+
+    .flash-overlay {
+      animation: neonFlash 0.35s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="no-scroll flex flex-col items-center justify-start h-full">
+
+  <div id="game-container" class="safe-padding relative w-full max-w-sm h-full flex flex-col items-center justify-between mx-auto transition-colors duration-500 p-1">
+    
+    <!-- Flash Overlay para transiciones Neón Synthwave -->
+    <div id="flash-effect" class="pointer-events-none absolute inset-0 bg-white z-50 opacity-0"></div>
+
+    <!-- Encabezado y Marcador Compacto -->
+    <div id="header-bar" class="w-full flex items-center justify-between px-2 py-1 bg-gray-900/90 border-2 border-cyan-500 rounded-xl z-10 shrink-0 transition-all duration-500 mb-1">
+      <div class="text-left">
+        <span id="level-indicator" class="text-[8px] sm:text-[9px] text-pink-400 block tracking-tight font-bold">NIVEL 1</span>
+        <span class="text-[10px] sm:text-xs text-yellow-400 font-bold">PTS: <span id="score-val">0</span></span>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <div id="beer-indicator" class="flex items-center gap-1 px-1.5 py-0.5 bg-gray-800 rounded-lg opacity-40 transition-opacity">
+          <span class="text-xs">🍺</span>
+          <span id="beer-count" class="text-[10px] text-yellow-400 font-bold">x0</span>
+        </div>
+        <button id="mute-btn" class="p-1 bg-gray-800 active:bg-gray-700 text-xs rounded-lg border border-gray-600">
+          🔊
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenedor del Canvas Ajustado Ajustado al Máximo Sin Espacios Inútiles -->
+    <div id="canvas-wrapper" class="relative shrink-0 flex items-center justify-center p-0 m-0 overflow-hidden rounded-xl border-2 border-cyan-500 bg-black transition-all duration-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+      <canvas id="gameCanvas" class="block rounded-lg shadow-2xl"></canvas>
+
+      <!-- Overlay Pantalla de Inicio -->
+      <div id="start-overlay" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-3 z-40 text-center gap-2 overflow-y-auto">
+        <div>
+          <h1 class="text-base sm:text-lg text-yellow-400 glow-text mb-0.5">KIKE's 50s SNAKE</h1>
+          <p class="text-[9px] sm:text-[10px] text-cyan-400 tracking-widest">SYNTHWAVE EDITION</p>
+        </div>
+
+        <!-- Avatar Preview -->
+        <div class="p-2 bg-gray-900/90 border border-pink-500/50 rounded-lg w-full max-w-xs">
+          <div class="text-xl mb-1">🕺🍺🍷🎂5️⃣0️⃣</div>
+          <p class="text-[9px] sm:text-[10px] text-gray-300 leading-tight">
+            Guía a <span class="text-yellow-400 font-bold">KIKE</span> por la ruta retro. Come bebidas y tarta para conseguir puntos. ¡Alcanza la puntuación requerida para abrir la puerta del <span class="text-pink-400 font-bold">PUB/BAR</span> y avanzar al siguiente nivel!
+          </p>
+        </div>
+
+        <button id="start-game-btn" class="w-full max-w-xs py-2 bg-yellow-400 text-black font-bold text-xs rounded-lg retro-btn glow-text animate-pulse cursor-pointer">
+          ¡EMPEZAR FIESTA! 🕹️
+        </button>
+      </div>
+
+      <!-- Overlay Pantalla Fin de Juego / Transición Nivel / Victoria -->
+      <div id="end-overlay" class="hidden absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-2.5 z-40 text-center gap-1.5 overflow-y-auto">
+        <div class="w-full flex flex-col items-center">
+          <h2 id="end-title" class="text-base sm:text-lg text-yellow-400 glow-text mb-0.5">¡VICTORIA!</h2>
+          <div id="end-subtitle-container" class="my-0.5 p-1 bg-purple-950/80 border border-purple-500/80 rounded-lg w-full max-w-xs shadow-lg">
+            <div id="end-icon" class="text-xl mb-0.5">🎉🕺🍺</div>
+            <p id="end-subtitle" class="text-[8px] sm:text-[9px] text-pink-300 leading-tight font-bold tracking-wide"></p>
+          </div>
+        </div>
+
+        <!-- Caja de Información -->
+        <div id="info-box" class="w-full max-w-xs p-1.5 bg-gray-900/90 border border-yellow-400 rounded-lg text-left space-y-0.5 text-[9px] leading-tight">
+          <p id="info-title" class="text-yellow-300 font-bold text-center text-[10px] mb-0.5">📍 INFORMACIÓN DE LA FIESTA 📍</p>
+          <div id="info-content" class="space-y-0.5 text-gray-200">
+            <p>📅 <strong>Fecha:</strong> Sábado, 14 NOV</p>
+            <p>⏰ <strong>Hora:</strong> 21:30h</p>
+            <p>🏢 <strong>Lugar:</strong> BAR / PUB CENTRAL</p>
+            <p class="text-center text-cyan-300"><strong>METRO BILBAO</strong></p>
+            <p class="text-center text-pink-400">Dress code: Synthwave 80s</p>
+          </div>
+          <p id="info-footer" class="text-[8px] text-center text-emerald-400 animate-pulse leading-relaxed pt-0.5">
+            ¡Prepárate para la gran celebración de los 50!
+          </p>
+        </div>
+
+        <button id="restart-btn" class="w-full max-w-xs py-2 bg-yellow-400 text-black font-bold text-xs rounded-lg retro-btn glow-text cursor-pointer">
+          JUGAR DE NUEVO 🔄
+        </button>
+      </div>
+    </div>
+
+    <!-- Controles Táctiles Subidos Inmediatamente Pegados al Marco de Juego -->
+    <div class="w-full flex items-center justify-center pt-1 pb-0 z-10 shrink-0">
+      <div class="grid grid-cols-3 grid-rows-3 gap-1 w-36 h-36 sm:w-40 sm:h-40">
+        <div></div>
+        <!-- ARRIBA -->
+        <button id="btn-up" class="neon-btn text-cyan-400 rounded-xl flex items-center justify-center w-full h-full active:scale-95">
+          <svg class="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_6px_currentColor]" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z"/>
+          </svg>
+        </button>
+        <div></div>
+
+        <!-- IZQUIERDA -->
+        <button id="btn-left" class="neon-btn text-cyan-400 rounded-xl flex items-center justify-center w-full h-full active:scale-95">
+          <svg class="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_6px_currentColor]" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+          </svg>
+        </button>
+
+        <!-- CENTRO DECORATIVO -->
+        <div class="bg-gray-950/80 rounded-xl border border-cyan-500/30 flex items-center justify-center text-xs shadow-inner w-full h-full">🕹️</div>
+
+        <!-- DERECHA -->
+        <button id="btn-right" class="neon-btn text-cyan-400 rounded-xl flex items-center justify-center w-full h-full active:scale-95">
+          <svg class="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_6px_currentColor]" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+          </svg>
+        </button>
+
+        <div></div>
+        <!-- ABAJO -->
+        <button id="btn-down" class="neon-btn text-cyan-400 rounded-xl flex items-center justify-center w-full h-full active:scale-95">
+          <svg class="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_6px_currentColor]" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+          </svg>
+        </button>
+        <div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Variables de Grid
+    const GRID_SIZE = 15;
+    let tileSize = 20;
+
+    // Puntuación objetivo por niveles
+    const LEVEL_TARGETS = {
+      1: 120, // Puntos requeridos para abrir la puerta en Nivel 1
+      2: 250  // Puntos requeridos para ganar el Nivel 2
+    };
+
+    // Paletas de Color Neón Synthwave 80s
+    const SYNTH_PALETTES = {
+      default: { bg: '#0d0614', border: '#06b6d4', glow: 'rgba(6, 182, 212, 0.4)', grid: '#1e1b4b', body: '#ec4899' },
+      beer:    { bg: '#180a00', border: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)', grid: '#451a03', body: '#fbbf24' },
+      num50:   { bg: '#00141d', border: '#38bdf8', glow: 'rgba(56, 189, 248, 0.5)', grid: '#0c4a6e', body: '#06b6d4' },
+      wine:    { bg: '#170012', border: '#e11d48', glow: 'rgba(225, 29, 72, 0.5)',  grid: '#4c0519', body: '#f43f5e' },
+      cake:    { bg: '#14001a', border: '#a855f7', glow: 'rgba(168, 85, 247, 0.5)', grid: '#3b0764', body: '#d8b4fe' }
+    };
+
+    let currentPalette = SYNTH_PALETTES.default;
+
+    // Referencias DOM
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreVal = document.getElementById('score-val');
+    const levelIndicator = document.getElementById('level-indicator');
+    const beerIndicator = document.getElementById('beer-indicator');
+    const beerCount = document.getElementById('beer-count');
+    const startOverlay = document.getElementById('start-overlay');
+    const endOverlay = document.getElementById('end-overlay');
+    const endTitle = document.getElementById('end-title');
+    const endSubtitle = document.getElementById('end-subtitle');
+    const endIcon = document.getElementById('end-icon');
+    const endSubtitleContainer = document.getElementById('end-subtitle-container');
+    const infoBox = document.getElementById('info-box');
+    const infoTitle = document.getElementById('info-title');
+    const infoContent = document.getElementById('info-content');
+    const infoFooter = document.getElementById('info-footer');
+    const muteBtn = document.getElementById('mute-btn');
+    const flashEffect = document.getElementById('flash-effect');
+    const canvasWrapper = document.getElementById('canvas-wrapper');
+    const headerBar = document.getElementById('header-bar');
+
+    // Estado Audio
+    let audioCtx = null;
+    let isMuted = false;
+    let musicInterval = null;
+
+    // Estado del Juego
+    let currentLevel = 1;
+    let score = 0;
+    let beersCollected = 0;
+    let isGameRunning = false;
+    let lastTime = 0;
+    let animTimer = 0;
+    let moveTimer = 0;
+    const moveInterval = 0.16; // Velocidad del Snake
+
+    // Serpiente (Kike)
+    let snake = [];
+    let dirX = 1;
+    let dirY = 0;
+    let nextDirX = 1;
+    let nextDirY = 0;
+    let hasBeerInHand = false;
+
+    // Comida actual y Puerta BAR
+    let food = null; // { x, y, type: 'beer'|'num50'|'wine'|'cake' }
+    let barDoor = null; // { x, y, isOpen: false }
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playSound(freq, duration, type = 'square') {
+      if (isMuted || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function startMusic() {
+      stopMusic();
+      if (isMuted) return;
+      // Arpegio Synthwave 80s
+      const synthNotes = [220.00, 261.63, 329.63, 392.00, 440.00, 392.00, 329.63, 261.63];
+      let step = 0;
+      musicInterval = setInterval(() => {
+        if (!isGameRunning || isMuted) return;
+        playSound(synthNotes[step % synthNotes.length], 0.1, 'sawtooth');
+        step++;
+      }, 180);
+    }
+
+    function stopMusic() {
+      if (musicInterval) {
+        clearInterval(musicInterval);
+        musicInterval = null;
+      }
+    }
+
+    function playEatSound() {
+      if (isMuted || !audioCtx) return;
+      try {
+        const notes = [440, 554.37, 659.25, 880];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.05);
+          gain.gain.setValueAtTime(0.25, audioCtx.currentTime + idx * 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.05 + 0.12);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + idx * 0.05);
+          osc.stop(audioCtx.currentTime + idx * 0.05 + 0.12);
+        });
+      } catch (e) {}
+    }
+
+    function playDoorOpenSound() {
+      if (isMuted || !audioCtx) return;
+      try {
+        const fanfare = [329.63, 392.00, 493.88, 587.33, 659.25];
+        fanfare.forEach((f, i) => {
+          setTimeout(() => playSound(f, 0.15, 'square'), i * 80);
+        });
+      } catch (e) {}
+    }
+
+    function playGameOverSound() {
+      if (isMuted || !audioCtx) return;
+      const notes = [220, 196, 174.61, 146.83];
+      notes.forEach((f, i) => {
+        setTimeout(() => playSound(f, 0.25, 'sawtooth'), i * 140);
+      });
+    }
+
+    function playWinSound() {
+      if (isMuted || !audioCtx) return;
+      const now = audioCtx.currentTime;
+      const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+      notes.forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, now + i * 0.1);
+        gain.gain.setValueAtTime(0.25, now + i * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.3);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now + i * 0.1);
+        osc.stop(now + i * 0.1 + 0.3);
+      });
+    }
+
+    function resizeCanvas() {
+      const container = document.getElementById('game-container');
+      const headerBar = document.getElementById('header-bar');
+      const controls = document.querySelector('#game-container > div:last-child');
+      
+      const availWidth = container.clientWidth - 8;
+      const headerH = headerBar ? headerBar.offsetHeight : 35;
+      const controlsH = controls ? controls.offsetHeight : 140;
+      
+      const availHeight = window.innerHeight - headerH - controlsH - 24;
+
+      const size = Math.floor(Math.max(160, Math.min(availWidth, availHeight)));
+      canvas.width = size;
+      canvas.height = size;
+      tileSize = size / GRID_SIZE;
+      render();
+    }
+
+    function applyPalette(paletteKey) {
+      const pal = SYNTH_PALETTES[paletteKey] || SYNTH_PALETTES.default;
+      currentPalette = pal;
+
+      // Efecto Flash Previo
+      flashEffect.style.backgroundColor = pal.border;
+      flashEffect.classList.remove('flash-overlay');
+      void flashEffect.offsetWidth; // Trigger reflow
+      flashEffect.classList.add('flash-overlay');
+
+      // Actualizar variables de estilos
+      document.body.style.backgroundColor = pal.bg;
+      canvasWrapper.style.borderColor = pal.border;
+      canvasWrapper.style.boxShadow = `0 0 15px ${pal.glow}`;
+      headerBar.style.borderColor = pal.border;
+
+      document.querySelectorAll('.neon-btn').forEach(btn => {
+        btn.style.setProperty('--neon-border', pal.border);
+        btn.style.setProperty('--neon-glow', pal.glow);
+      });
+    }
+
+    function spawnFood() {
+      const types = ['beer', 'num50', 'wine', 'cake'];
+      const chosenType = types[Math.floor(Math.random() * types.length)];
+
+      let valid = false;
+      let rx, ry;
+
+      while (!valid) {
+        rx = Math.floor(Math.random() * (GRID_SIZE - 2)) + 1;
+        ry = Math.floor(Math.random() * (GRID_SIZE - 2)) + 1;
+
+        // Evitar serpiente
+        const onSnake = snake.some(seg => seg.x === rx && seg.y === ry);
+        // Evitar puerta si existe
+        const onDoor = barDoor && barDoor.x === rx && barDoor.y === ry;
+
+        if (!onSnake && !onDoor) {
+          valid = true;
+        }
+      }
+
+      food = { x: rx, y: ry, type: chosenType };
+    }
+
+    function spawnBarDoor() {
+      let valid = false;
+      let dx, dy;
+
+      while (!valid) {
+        // La puerta aparece en los bordes transitables (por ejemplo fila 0, GRID_SIZE-1, col 0, etc)
+        const wallChoice = Math.floor(Math.random() * 4);
+        if (wallChoice === 0) { // Superior
+          dx = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
+          dy = 0;
+        } else if (wallChoice === 1) { // Inferior
+          dx = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
+          dy = GRID_SIZE - 1;
+        } else if (wallChoice === 2) { // Izquierda
+          dx = 0;
+          dy = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
+        } else { // Derecha
+          dx = GRID_SIZE - 1;
+          dy = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
+        }
+
+        // CRÍTICO: Asegurar que NO pise la cola ni el cuerpo de la serpiente
+        const onSnake = snake.some(seg => seg.x === dx && seg.y === dy);
+        // Evitar casilla de comida
+        const onFood = food && food.x === dx && food.y === dy;
+
+        if (!onSnake && !onFood) {
+          valid = true;
+        }
+      }
+
+      barDoor = { x: dx, y: dy, isOpen: true };
+      playDoorOpenSound();
+    }
+
+    function initSnake() {
+      const startX = 5;
+      const startY = 7;
+      snake = [
+        { x: startX, y: startY },
+        { x: startX - 1, y: startY },
+        { x: startX - 2, y: startY }
+      ];
+      dirX = 1; dirY = 0;
+      nextDirX = 1; nextDirY = 0;
+      hasBeerInHand = false;
+      barDoor = null;
+    }
+
+    function startGame(level = 1) {
+      initAudio();
+      currentLevel = level;
+      score = (level === 1) ? 0 : score;
+      beersCollected = (level === 1) ? 0 : beersCollected;
+
+      levelIndicator.textContent = `NIVEL ${currentLevel}`;
+      scoreVal.textContent = score;
+      if (beerCount) beerCount.textContent = `x${beersCollected}`;
+
+      applyPalette('default');
+      initSnake();
+      spawnFood();
+
+      startOverlay.classList.add('hidden');
+      endOverlay.classList.add('hidden');
+
+      isGameRunning = true;
+      startMusic();
+      lastTime = performance.now();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function setDirection(dx, dy) {
+      // Evitar giro de 180 grados instantáneo
+      if (dx === -dirX && dy === -dirY) return;
+      nextDirX = dx;
+      nextDirY = dy;
+    }
+
+    function gameLoop(time) {
+      if (!isGameRunning) return;
+      const dt = Math.min((time - lastTime) / 1000, 0.1);
+      lastTime = time;
+
+      animTimer += dt;
+      moveTimer += dt;
+
+      if (moveTimer >= moveInterval) {
+        moveTimer = 0;
+        updateSnake();
+      }
+
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function updateSnake() {
+      dirX = nextDirX;
+      dirY = nextDirY;
+
+      const head = snake[0];
+      const newHead = { x: head.x + dirX, y: head.y + dirY };
+
+      // Colisión con Bordes (Paredes) - salvo si hay puerta abierta
+      if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+        if (barDoor && barDoor.isOpen && newHead.x === barDoor.x && newHead.y === barDoor.y) {
+          handleDoorPass();
+          return;
+        } else {
+          handleGameOver("¡Has chocado contra el muro del club!");
+          return;
+        }
+      }
+
+      // Colisión con la Puerta si está en borde transitable
+      if (barDoor && barDoor.isOpen && newHead.x === barDoor.x && newHead.y === barDoor.y) {
+        handleDoorPass();
+        return;
+      }
+
+      // Colisión con su propio cuerpo
+      if (snake.some((seg, idx) => idx !== 0 && seg.x === newHead.x && seg.y === newHead.y)) {
+        handleGameOver("¡Kike se ha tropezado con su propia cola!");
+        return;
+      }
+
+      // Avanzar Serpiente
+      snake.unshift(newHead);
+
+      // Comprobar comida
+      if (food && newHead.x === food.x && newHead.y === food.y) {
+        playEatSound();
+        let pts = 10;
+
+        if (food.type === 'beer') {
+          pts = 20;
+          beersCollected++;
+          hasBeerInHand = true;
+          if (beerCount) beerCount.textContent = `x${beersCollected}`;
+          beerIndicator.classList.remove('opacity-40');
+          applyPalette('beer');
+        } else if (food.type === 'num50') {
+          pts = 50;
+          applyPalette('num50');
+        } else if (food.type === 'wine') {
+          pts = 30;
+          applyPalette('wine');
+        } else if (food.type === 'cake') {
+          pts = 40;
+          applyPalette('cake');
+        }
+
+        score += pts;
+        scoreVal.textContent = score;
+
+        // Verificar si abre la puerta del BAR según nivel
+        const target = LEVEL_TARGETS[currentLevel] || 150;
+        if (score >= target && (!barDoor || !barDoor.isOpen)) {
+          spawnBarDoor();
+        }
+
+        spawnFood();
+      } else {
+        snake.pop(); // Mantener longitud si no come
+      }
+    }
+
+    function handleDoorPass() {
+      isGameRunning = false;
+      stopMusic();
+
+      if (currentLevel === 1) {
+        playWinSound();
+        // Mostrar Transición Nivel 2
+        endTitle.textContent = "¡NIVEL 1 COMPLETADO!";
+        endTitle.className = "text-lg sm:text-xl text-yellow-400 glow-text mb-0.5";
+        endIcon.textContent = "🚪🍺🕺";
+        endSubtitleContainer.className = "my-0.5 p-1.5 bg-blue-950/80 border border-cyan-500/80 rounded-lg w-full max-w-xs shadow-lg";
+        endSubtitle.textContent = "¡HAS ENCONTRADO LA ENTRADA AL PUB! PREPÁRATE PARA EL NIVEL 2...";
+        
+        infoBox.classList.remove('hidden');
+        infoTitle.textContent = "📍 INFORMACIÓN DE NIVEL 1 📍";
+        infoContent.innerHTML = `
+          <p class="text-center text-cyan-300 font-bold">¡PUNTUACIÓN CONSEGUIDA: ${score} PTS!</p>
+          <p class="text-center text-pink-400 mt-1">Siguiente objetivo: Alcanzar ${LEVEL_TARGETS[2]} PTS en el Nivel 2 para entrar a la Gran Fiesta de los 50s.</p>
+        `;
+        infoFooter.textContent = "Pulsa el botón para continuar la fiesta en el Nivel 2";
+
+        const btn = document.getElementById('restart-btn');
+        btn.textContent = "¡IR AL NIVEL 2! 🚀";
+        btn.onclick = () => {
+          btn.onclick = null;
+          btn.addEventListener('click', () => startGame(1));
+          startGame(2);
+        };
+
+        endOverlay.classList.remove('hidden');
+      } else {
+        // Victoria Final del Juego (Nivel 2 completado)
+        playWinSound();
+        endTitle.textContent = "¡VICTORIA TOTAL!";
+        endTitle.className = "text-lg sm:text-xl text-yellow-400 glow-text mb-0.5";
+        endIcon.textContent = "🎉🍻🕺🎂";
+        endSubtitleContainer.className = "my-0.5 p-1.5 bg-pink-950/80 border border-pink-500/80 rounded-lg w-full max-w-xs shadow-lg";
+        endSubtitle.textContent = "¡BRUTAL! HAS COMPLETADO TODOS LOS NIVELES Y LLEGADO A LA FIESTA DE KIKE!";
+
+        infoBox.classList.remove('hidden');
+        infoTitle.textContent = "📍 DATOS DE LA FIESTA 📍";
+        /* TEXTO EDITABLE DE INFORMACIÓN DE FIESTA FUTURA */
+        infoContent.innerHTML = `
+          <p>📅 <strong>Fecha:</strong> Sábado, 14 NOV</p>
+          <p>⏰ <strong>Hora:</strong> 21:30h</p>
+          <p>🏢 <strong>Lugar:</strong> C/ Eguilaz 10</p>
+          <p class="text-center text-cyan-300"><strong>METRO BILBAO</strong></p>
+          <p class="text-center text-pink-400">Dress code: Synthwave 80s / No dress code</p>
+        `;
+        infoFooter.textContent = "¡Esperamos celebrar este gran 50 cumpleaños por todo lo alto!";
+
+        const btn = document.getElementById('restart-btn');
+        btn.textContent = "VOLVER A JUGAR 🔄";
+        btn.onclick = () => startGame(1);
+
+        endOverlay.classList.remove('hidden');
+      }
+    }
+
+    function handleGameOver(reason) {
+      isGameRunning = false;
+      stopMusic();
+      playGameOverSound();
+
+      endTitle.textContent = "GAME OVER";
+      endTitle.className = "text-lg sm:text-xl text-red-500 glow-text mb-0.5 animate-bounce";
+      endIcon.textContent = "💥🚶‍♂️❌";
+      endSubtitleContainer.className = "my-0.5 p-1.5 bg-red-950/90 border border-red-500 rounded-lg w-full max-w-xs shadow-2xl";
+      endSubtitle.innerHTML = `${reason}<br><br><span class="text-yellow-300">PUNTUACIÓN FINAL:</span> ${score} PTS`;
+
+      infoBox.classList.add('hidden');
+
+      const btn = document.getElementById('restart-btn');
+      btn.textContent = "REINTENTAR 🔄";
+      btn.onclick = () => startGame(1);
+
+      endOverlay.classList.remove('hidden');
+    }
+
+    /**
+     * Dibuja al personaje principal (Kike) como Cabeza de Cuerpo Entero:
+     */
+    function drawKikeHead(cx, cy, size, dx, dy) {
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      const scale = size / 32;
+
+      // Orientar según la dirección horizontal
+      if (dx === -1) {
+        ctx.scale(-1, 1);
+      }
+
+      // Animación de bote
+      const bounce = Math.sin(animTimer * 12) * 1 * scale;
+
+      // Cuerpo / Camiseta roja de 50s
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.roundRect(-6 * scale, (-1 * scale) + bounce, 12 * scale, 9 * scale, 2 * scale);
+      ctx.fill();
+
+      // Número "50" en la camiseta
+      ctx.fillStyle = '#facc15';
+      ctx.font = `bold ${Math.max(5, Math.floor(5.5 * scale))}px Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('50', 0, (3.5 * scale) + bounce);
+
+      // Piernas cortas
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(-4 * scale, (8 * scale) + bounce, 3 * scale, 4 * scale);
+      ctx.fillRect(1 * scale, (8 * scale) + bounce, 3 * scale, 4 * scale);
+
+      // Zapatos
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(-5 * scale, (11 * scale) + bounce, 4 * scale, 2 * scale);
+      ctx.fillRect(1 * scale, (11 * scale) + bounce, 4 * scale, 2 * scale);
+
+      // Cabeza
+      ctx.fillStyle = '#ffdbac';
+      ctx.beginPath();
+      ctx.arc(0, (-7 * scale) + bounce, 6.5 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cabello curto retro
+      ctx.fillStyle = '#451a03';
+      ctx.beginPath();
+      ctx.arc(0, (-8.5 * scale) + bounce, 6.5 * scale, Math.PI * 1.1, Math.PI * 1.9);
+      ctx.fill();
+
+      if (hasBeerInHand) {
+        // Gafas Neón Party
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(-5 * scale, (-9 * scale) + bounce, 10 * scale, 3 * scale);
+        ctx.fillStyle = '#ec4899';
+        ctx.fillRect(-4 * scale, (-8.5 * scale) + bounce, 2.5 * scale, 1 * scale);
+        ctx.fillRect(1.5 * scale, (-8.5 * scale) + bounce, 2.5 * scale, 1 * scale);
+
+        // Sonrisa
+        ctx.strokeStyle = '#991b1b';
+        ctx.lineWidth = 1 * scale;
+        ctx.beginPath();
+        ctx.arc(0, (-4.5 * scale) + bounce, 3 * scale, 0.1, Math.PI - 0.1);
+        ctx.stroke();
+
+        // Brazo sosteniendo Jarra de Cerveza helada
+        ctx.fillStyle = '#ffdbac';
+        ctx.fillRect(5 * scale, (0 * scale) + bounce, 3.5 * scale, 3 * scale);
+
+        // Jarra
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fillRect(8 * scale, (-2 * scale) + bounce, 4.5 * scale, 6 * scale);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(8.8 * scale, (-0.8 * scale) + bounce, 3 * scale, 4.2 * scale);
+        // Espuma
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(8.5 * scale, (-2 * scale) + bounce, 1.8 * scale, 0, Math.PI * 2);
+        ctx.arc(11 * scale, (-2.2 * scale) + bounce, 1.8 * scale, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Ojos
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(2 * scale, (-8 * scale) + bounce, 1 * scale, 0, Math.PI * 2);
+        ctx.arc(-2 * scale, (-8 * scale) + bounce, 1 * scale, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Sonrisa
+        ctx.strokeStyle = '#991b1b';
+        ctx.lineWidth = 1 * scale;
+        ctx.beginPath();
+        ctx.arc(0, (-4.8 * scale) + bounce, 2.2 * scale, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    function render() {
+      // Fondo Synthwave con Rejilla Neón
+      ctx.fillStyle = currentPalette.bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Dibujar cuadrícula neón de fondo
+      ctx.strokeStyle = currentPalette.grid;
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= GRID_SIZE; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * tileSize, 0);
+        ctx.lineTo(i * tileSize, canvas.height);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, i * tileSize);
+        ctx.lineTo(canvas.width, i * tileSize);
+        ctx.stroke();
+      }
+
+      // Dibujar Puerta de BAR / PUB si está activa
+      if (barDoor && barDoor.isOpen) {
+        const bx = barDoor.x * tileSize;
+        const by = barDoor.y * tileSize;
+
+        ctx.save();
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(bx, by, tileSize, tileSize);
+
+        // Marco Neón resplandeciente
+        ctx.strokeStyle = '#ec4899';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(bx + 1, by + 1, tileSize - 2, tileSize - 2);
+
+        // Cartel "BAR"
+        ctx.font = `bold ${tileSize * 0.5}px sans-serif`;
+        ctx.fillStyle = '#facc15';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🚪BAR', bx + tileSize / 2, by + tileSize / 2);
+        ctx.restore();
+      }
+
+      // Dibujar Comida
+      if (food) {
+        const fx = food.x * tileSize + tileSize / 2;
+        const fy = food.y * tileSize + tileSize / 2;
+
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `${tileSize * 0.75}px sans-serif`;
+
+        let icon = '🍺';
+        if (food.type === 'num50') icon = '5️⃣0️⃣';
+        else if (food.type === 'wine') icon = '🍷';
+        else if (food.type === 'cake') icon = '🎂';
+
+        // Pulso de resplandor para la comida
+        const scalePulse = 1 + Math.sin(animTimer * 10) * 0.1;
+        ctx.translate(fx, fy);
+        ctx.scale(scalePulse, scalePulse);
+        ctx.fillText(icon, 0, 1);
+        ctx.restore();
+      }
+
+      // Dibujar Serpiente
+      snake.forEach((seg, index) => {
+        const sx = seg.x * tileSize + tileSize / 2;
+        const sy = seg.y * tileSize + tileSize / 2;
+
+        if (index === 0) {
+          // Cabeza: Muñeco Kike de cuerpo entero
+          drawKikeHead(sx, sy, tileSize * 1.1, dirX, dirY);
+        } else {
+          // Cola / Cuerpo Neón Synthwave
+          ctx.save();
+          const radius = (tileSize / 2) * (1 - (index / (snake.length + 5)) * 0.35);
+
+          ctx.fillStyle = currentPalette.body;
+          ctx.beginPath();
+          ctx.arc(sx, sy, Math.max(3, radius), 0, Math.PI * 2);
+          ctx.fill();
+
+          // Núcleo brillante neón
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(sx, sy, Math.max(1.5, radius * 0.4), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      });
+    }
+
+    // Event Listeners y Controles
+    document.getElementById('start-game-btn').addEventListener('click', () => {
+      startGame(1);
+    });
+
+    muteBtn.addEventListener('click', () => {
+      isMuted = !isMuted;
+      muteBtn.textContent = isMuted ? '🔇' : '🔊';
+      if (isMuted) stopMusic();
+      else if (isGameRunning) startMusic();
+    });
+
+    window.addEventListener('keydown', e => {
+      if (!isGameRunning) return;
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          setDirection(0, -1);
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          setDirection(0, 1);
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          setDirection(-1, 0);
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          setDirection(1, 0);
+          break;
+      }
+    });
+
+    document.getElementById('btn-up').addEventListener('click', () => setDirection(0, -1));
+    document.getElementById('btn-down').addEventListener('click', () => setDirection(0, 1));
+    document.getElementById('btn-left').addEventListener('click', () => setDirection(-1, 0));
+    document.getElementById('btn-right').addEventListener('click', () => setDirection(1, 0));
+
+    // Gestos de Swipe en Móvil
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    canvas.addEventListener('touchstart', e => {
+      if (e.touches.length > 0) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    canvas.addEventListener('touchend', e => {
+      if (!isGameRunning || e.changedTouches.length === 0) return;
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+
+      const dx = touchEndX - touchStartX;
+      const dy = touchEndY - touchStartY;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 20) setDirection(1, 0);
+        else if (dx < -20) setDirection(-1, 0);
+      } else {
+        if (dy > 20) setDirection(0, 1);
+        else if (dy < -20) setDirection(0, -1);
+      }
+    }, { passive: true });
+
+    window.addEventListener('resize', resizeCanvas);
+
+    window.onload = function () {
+      resizeCanvas();
+    };
+  </script>
+</body>
+</html>
