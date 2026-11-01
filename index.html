@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Kike's 50s -  Reto 3</title>
+  <title>Kike's 50s - Snake Synthwave 80s</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -88,30 +88,46 @@
 </head>
 <body class="no-scroll flex flex-col items-center justify-start h-full">
 
-  <div id="game-container" class="safe-padding relative w-full max-w-sm h-full flex flex-col items-center justify-between mx-auto transition-colors duration-500 p-1">
+  <div id="game-container" class="safe-padding relative w-full max-w-sm h-full flex flex-col items-center justify-start mx-auto transition-colors duration-500 p-1 gap-1">
     
     <!-- Flash Overlay para transiciones Neón Synthwave -->
     <div id="flash-effect" class="pointer-events-none absolute inset-0 bg-white z-50 opacity-0"></div>
 
-    <!-- Encabezado y Marcador Compacto -->
-    <div id="header-bar" class="w-full flex items-center justify-between px-2 py-1 bg-gray-900/90 border-2 border-cyan-500 rounded-xl z-10 shrink-0 transition-all duration-500 mb-1">
+    <!-- Encabezado y Marcador Compacto con Cervezas, Vinos y Tartas -->
+    <div id="header-bar" class="w-full flex items-center justify-between px-2 py-1 bg-gray-900/90 border-2 border-cyan-500 rounded-xl z-10 shrink-0 transition-all duration-500">
       <div class="text-left">
         <span id="level-indicator" class="text-[8px] sm:text-[9px] text-pink-400 block tracking-tight font-bold">NIVEL 1</span>
         <span class="text-[10px] sm:text-xs text-yellow-400 font-bold">PTS: <span id="score-val">0</span></span>
       </div>
 
-      <div class="flex items-center gap-1.5">
-        <div id="beer-indicator" class="flex items-center gap-1 px-1.5 py-0.5 bg-gray-800 rounded-lg opacity-40 transition-opacity">
-          <span class="text-xs">🍺</span>
-          <span id="beer-count" class="text-[10px] text-yellow-400 font-bold">x0</span>
+      <!-- Contadores de Consumibles Recolectados (Iconos grandes) -->
+      <div class="flex items-center gap-1">
+        <!-- Cerveza -->
+        <div id="beer-indicator" class="flex items-center gap-0.5 px-1 py-0.5 bg-gray-800/90 border border-amber-500/40 rounded-lg opacity-40 transition-all" title="Cervezas">
+          <span class="text-lg leading-none">🍺</span>
+          <span id="beer-count" class="text-xs text-yellow-400 font-bold">x0</span>
         </div>
-        <button id="mute-btn" class="p-1 bg-gray-800 active:bg-gray-700 text-xs rounded-lg border border-gray-600">
+
+        <!-- Vino -->
+        <div id="wine-indicator" class="flex items-center gap-0.5 px-1 py-0.5 bg-gray-800/90 border border-rose-500/40 rounded-lg opacity-40 transition-all" title="Vinos">
+          <span class="text-lg leading-none">🍷</span>
+          <span id="wine-count" class="text-xs text-rose-400 font-bold">x0</span>
+        </div>
+
+        <!-- Tarta -->
+        <div id="cake-indicator" class="flex items-center gap-0.5 px-1 py-0.5 bg-gray-800/90 border border-purple-500/40 rounded-lg opacity-40 transition-all" title="Tartas">
+          <span class="text-lg leading-none">🎂</span>
+          <span id="cake-count" class="text-xs text-purple-400 font-bold">x0</span>
+        </div>
+
+        <!-- Botón Silenciar -->
+        <button id="mute-btn" class="p-1 ml-0.5 bg-gray-800 active:bg-gray-700 text-xs rounded-lg border border-gray-600">
           🔊
         </button>
       </div>
     </div>
 
-    <!-- Contenedor del Canvas Ajustado Ajustado al Máximo Sin Espacios Inútiles -->
+    <!-- Contenedor del Canvas Ajustado al Máximo Sin Espacios Inútiles -->
     <div id="canvas-wrapper" class="relative shrink-0 flex items-center justify-center p-0 m-0 overflow-hidden rounded-xl border-2 border-cyan-500 bg-black transition-all duration-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
       <canvas id="gameCanvas" class="block rounded-lg shadow-2xl"></canvas>
 
@@ -166,51 +182,12 @@
       </div>
     </div>
 
-    <!-- Controles Táctiles Subidos Inmediatamente Pegados al Marco de Juego -->
-    <div class="w-full flex items-center justify-center pt-1 pb-0 z-10 shrink-0">
-      <div class="grid grid-cols-3 grid-rows-3 gap-1 w-36 h-36 sm:w-40 sm:h-40">
-        <div></div>
-        <!-- ARRIBA -->
-        <button id="btn-up" class="neon-btn text-cyan-400 rounded-xl flex items-center justify-center w-full h-full active:scale-95">
-          <svg class="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_6px_currentColor]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z"/>
-          </svg>
-        </button>
-        <div></div>
-
-        <!-- IZQUIERDA -->
-        <button id="btn-left" class="neon-btn text-cyan-400 rounded-xl flex items-center justify-center w-full h-full active:scale-95">
-          <svg class="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_6px_currentColor]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
-          </svg>
-        </button>
-
-        <!-- CENTRO DECORATIVO -->
-        <div class="bg-gray-950/80 rounded-xl border border-cyan-500/30 flex items-center justify-center text-xs shadow-inner w-full h-full">🕹️</div>
-
-        <!-- DERECHA -->
-        <button id="btn-right" class="neon-btn text-cyan-400 rounded-xl flex items-center justify-center w-full h-full active:scale-95">
-          <svg class="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_6px_currentColor]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
-          </svg>
-        </button>
-
-        <div></div>
-        <!-- ABAJO -->
-        <button id="btn-down" class="neon-btn text-cyan-400 rounded-xl flex items-center justify-center w-full h-full active:scale-95">
-          <svg class="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_6px_currentColor]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
-          </svg>
-        </button>
-        <div></div>
-      </div>
-    </div>
-
   </div>
 
   <script>
-    // Variables de Grid
-    const GRID_SIZE = 15;
+    // Variables de Grid (15 columnas de ancho, 18 filas de alto para +20% de altura vertical)
+    const GRID_COLS = 15;
+    const GRID_ROWS = 18;
     let tileSize = 20;
 
     // Puntuación objetivo por niveles
@@ -235,8 +212,15 @@
     const ctx = canvas.getContext('2d');
     const scoreVal = document.getElementById('score-val');
     const levelIndicator = document.getElementById('level-indicator');
+    
+    // Indicadores y contadores
     const beerIndicator = document.getElementById('beer-indicator');
     const beerCount = document.getElementById('beer-count');
+    const wineIndicator = document.getElementById('wine-indicator');
+    const wineCount = document.getElementById('wine-count');
+    const cakeIndicator = document.getElementById('cake-indicator');
+    const cakeCount = document.getElementById('cake-count');
+
     const startOverlay = document.getElementById('start-overlay');
     const endOverlay = document.getElementById('end-overlay');
     const endTitle = document.getElementById('end-title');
@@ -261,23 +245,56 @@
     let currentLevel = 1;
     let score = 0;
     let beersCollected = 0;
+    let winesCollected = 0;
+    let cakesCollected = 0;
     let isGameRunning = false;
     let lastTime = 0;
     let animTimer = 0;
-    let moveTimer = 0;
-    const moveInterval = 0.16; // Velocidad del Snake
 
-    // Serpiente (Kike)
-    let snake = [];
+    // Movimiento fluido continuo de la serpiente
+    const moveSpeed = 6.2; // Velocidad de casillas por segundo
+    let headX = 5;
+    let headY = 7;
+    let targetGridX = 5;
+    let targetGridY = 7;
+    let gridX = 5;
+    let gridY = 7;
     let dirX = 1;
     let dirY = 0;
     let nextDirX = 1;
     let nextDirY = 0;
     let hasBeerInHand = false;
 
+    // Serpiente y ruta de historial de posiciones
+    let snakeLength = 3;
+    let pathHistory = [];
+    let guestList = [];
+
+    // Definición de 16 personajes de fiesta distintos
+    const GUEST_DESIGNS = [
+      { hair: '#facc15', skin: '#ffdbac', shirt: '#ec4899', pants: '#1e293b', style: 'blonde_girl' },
+      { hair: '#111827', skin: '#8d5524', shirt: '#06b6d4', pants: '#334155', style: 'afro_boy' },
+      { hair: '#ef4444', skin: '#f1c27d', shirt: '#a855f7', pants: '#0f172a', style: 'punk_mohawk' },
+      { hair: '#64748b', skin: '#ffdbac', shirt: '#10b981', pants: '#1e1b4b', style: 'cool_dude' },
+      { hair: '#3b82f6', skin: '#c68642', shirt: '#f59e0b', pants: '#172554', style: 'neon_hunk' },
+      { hair: '#d97706', skin: '#ffdbac', shirt: '#3b82f6', pants: '#475569', style: 'ginger_party' },
+      { hair: '#ec4899', skin: '#e0ac69', shirt: '#8b5cf6', pants: '#0f172a', style: 'pink_punk' },
+      { hair: '#1e293b', skin: '#ffdbac', shirt: '#ef4444', pants: '#1e293b', style: 'rocker' },
+      { hair: '#fef08a', skin: '#f1c27d', shirt: '#06b6d4', pants: '#374151', style: 'disco_queen' },
+      { hair: '#7c2d12', skin: '#5c3836', shirt: '#e11d48', pants: '#1e293b', style: 'stylish_guy' },
+      { hair: '#10b981', skin: '#ffdbac', shirt: '#facc15', pants: '#451a03', style: 'green_hair' },
+      { hair: '#a855f7', skin: '#8d5524', shirt: '#38bdf8', pants: '#111827', style: 'violet_star' },
+      { hair: '#f97316', skin: '#ffdbac', shirt: '#10b981', pants: '#1f2937', style: 'funky' },
+      { hair: '#ffffff', skin: '#e0ac69', shirt: '#ec4899', pants: '#0284c7', style: 'white_hair' },
+      { hair: '#fbbf24', skin: '#c68642', shirt: '#84cc16', pants: '#334155', style: 'blonde_boy' },
+      { hair: '#431407', skin: '#ffdbac', shirt: '#f43f5e', pants: '#1e1b4b', style: 'brunette_girl' }
+    ];
+
+    guestList = Array.from({ length: 50 }, () => GUEST_DESIGNS[Math.floor(Math.random() * GUEST_DESIGNS.length)]);
+
     // Comida actual y Puerta BAR
-    let food = null; // { x, y, type: 'beer'|'num50'|'wine'|'cake' }
-    let barDoor = null; // { x, y, isOpen: false }
+    let food = null;
+    let barDoor = null;
 
     function initAudio() {
       if (!audioCtx) {
@@ -307,14 +324,23 @@
     function startMusic() {
       stopMusic();
       if (isMuted) return;
-      // Arpegio Synthwave 80s
-      const synthNotes = [220.00, 261.63, 329.63, 392.00, 440.00, 392.00, 329.63, 261.63];
+
+      // Nivel 1: Melodía original a 180ms
+      // Nivel 2: Notas en tonalidad más aguda y ritmo rápido a 130ms
+      let synthNotes = [220.00, 261.63, 329.63, 392.00, 440.00, 392.00, 329.63, 261.63];
+      let tempo = 180;
+
+      if (currentLevel === 2) {
+        synthNotes = [293.66, 369.99, 440.00, 554.37, 587.33, 554.37, 440.00, 369.99];
+        tempo = 130;
+      }
+
       let step = 0;
       musicInterval = setInterval(() => {
         if (!isGameRunning || isMuted) return;
-        playSound(synthNotes[step % synthNotes.length], 0.1, 'sawtooth');
+        playSound(synthNotes[step % synthNotes.length], 0.09, 'sawtooth');
         step++;
-      }, 180);
+      }, tempo);
     }
 
     function stopMusic() {
@@ -382,18 +408,21 @@
     function resizeCanvas() {
       const container = document.getElementById('game-container');
       const headerBar = document.getElementById('header-bar');
-      const controls = document.querySelector('#game-container > div:last-child');
       
       const availWidth = container.clientWidth - 8;
       const headerH = headerBar ? headerBar.offsetHeight : 35;
-      const controlsH = controls ? controls.offsetHeight : 140;
       
-      const availHeight = window.innerHeight - headerH - controlsH - 24;
+      const availHeight = window.innerHeight - headerH - 16;
 
-      const size = Math.floor(Math.max(160, Math.min(availWidth, availHeight)));
-      canvas.width = size;
-      canvas.height = size;
-      tileSize = size / GRID_SIZE;
+      // Calcular tamaño de casilla manteniendo la proporción 15:18 (+20% de alto)
+      let calculatedTileSize = availWidth / GRID_COLS;
+      if (calculatedTileSize * GRID_ROWS > availHeight) {
+        calculatedTileSize = availHeight / GRID_ROWS;
+      }
+
+      tileSize = Math.max(8, calculatedTileSize);
+      canvas.width = Math.floor(tileSize * GRID_COLS);
+      canvas.height = Math.floor(tileSize * GRID_ROWS);
       render();
     }
 
@@ -401,13 +430,11 @@
       const pal = SYNTH_PALETTES[paletteKey] || SYNTH_PALETTES.default;
       currentPalette = pal;
 
-      // Efecto Flash Previo
       flashEffect.style.backgroundColor = pal.border;
       flashEffect.classList.remove('flash-overlay');
-      void flashEffect.offsetWidth; // Trigger reflow
+      void flashEffect.offsetWidth;
       flashEffect.classList.add('flash-overlay');
 
-      // Actualizar variables de estilos
       document.body.style.backgroundColor = pal.bg;
       canvasWrapper.style.borderColor = pal.border;
       canvasWrapper.style.boxShadow = `0 0 15px ${pal.glow}`;
@@ -427,12 +454,10 @@
       let rx, ry;
 
       while (!valid) {
-        rx = Math.floor(Math.random() * (GRID_SIZE - 2)) + 1;
-        ry = Math.floor(Math.random() * (GRID_SIZE - 2)) + 1;
+        rx = Math.floor(Math.random() * (GRID_COLS - 2)) + 1;
+        ry = Math.floor(Math.random() * (GRID_ROWS - 2)) + 1;
 
-        // Evitar serpiente
-        const onSnake = snake.some(seg => seg.x === rx && seg.y === ry);
-        // Evitar puerta si existe
+        const onSnake = getBodyGridPositions().some(pos => pos.x === rx && pos.y === ry);
         const onDoor = barDoor && barDoor.x === rx && barDoor.y === ry;
 
         if (!onSnake && !onDoor) {
@@ -448,25 +473,22 @@
       let dx, dy;
 
       while (!valid) {
-        // La puerta aparece en los bordes transitables (por ejemplo fila 0, GRID_SIZE-1, col 0, etc)
         const wallChoice = Math.floor(Math.random() * 4);
-        if (wallChoice === 0) { // Superior
-          dx = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
+        if (wallChoice === 0) {
+          dx = Math.floor(Math.random() * (GRID_COLS - 4)) + 2;
           dy = 0;
-        } else if (wallChoice === 1) { // Inferior
-          dx = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
-          dy = GRID_SIZE - 1;
-        } else if (wallChoice === 2) { // Izquierda
+        } else if (wallChoice === 1) {
+          dx = Math.floor(Math.random() * (GRID_COLS - 4)) + 2;
+          dy = GRID_ROWS - 1;
+        } else if (wallChoice === 2) {
           dx = 0;
-          dy = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
-        } else { // Derecha
-          dx = GRID_SIZE - 1;
-          dy = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
+          dy = Math.floor(Math.random() * (GRID_ROWS - 4)) + 2;
+        } else {
+          dx = GRID_COLS - 1;
+          dy = Math.floor(Math.random() * (GRID_ROWS - 4)) + 2;
         }
 
-        // CRÍTICO: Asegurar que NO pise la cola ni el cuerpo de la serpiente
-        const onSnake = snake.some(seg => seg.x === dx && seg.y === dy);
-        // Evitar casilla de comida
+        const onSnake = getBodyGridPositions().some(pos => pos.x === dx && pos.y === dy);
         const onFood = food && food.x === dx && food.y === dy;
 
         if (!onSnake && !onFood) {
@@ -478,29 +500,74 @@
       playDoorOpenSound();
     }
 
+    function getBodyGridPositions() {
+      const positions = [];
+      positions.push({ x: targetGridX, y: targetGridY });
+      for (let i = 1; i < snakeLength; i++) {
+        const dist = i * 1.0;
+        const pos = getPositionAtDistance(dist);
+        positions.push({ x: Math.round(pos.x), y: Math.round(pos.y) });
+      }
+      return positions;
+    }
+
     function initSnake() {
-      const startX = 5;
-      const startY = 7;
-      snake = [
-        { x: startX, y: startY },
-        { x: startX - 1, y: startY },
-        { x: startX - 2, y: startY }
-      ];
+      gridX = 5;
+      gridY = 7;
+      targetGridX = 5;
+      targetGridY = 7;
+      headX = 5;
+      headY = 7;
       dirX = 1; dirY = 0;
       nextDirX = 1; nextDirY = 0;
+      snakeLength = 1;
       hasBeerInHand = false;
       barDoor = null;
+
+      guestList = [];
+      for (let i = 0; i < 50; i++) {
+        guestList.push(GUEST_DESIGNS[Math.floor(Math.random() * GUEST_DESIGNS.length)]);
+      }
+
+      pathHistory = [];
+      for (let i = 0; i <= 20; i += 0.05) {
+        pathHistory.push({ x: 5 - i, y: 7 });
+      }
+
+      targetGridX = gridX + dirX;
+      targetGridY = gridY + dirY;
     }
 
     function startGame(level = 1) {
       initAudio();
       currentLevel = level;
-      score = (level === 1) ? 0 : score;
-      beersCollected = (level === 1) ? 0 : beersCollected;
+      
+      // Reiniciar puntos si volvemos a empezar o si es nivel 1, pero conservar bebidas y tartas entre niveles
+      if (level === 1) {
+        score = 0;
+        beersCollected = 0;
+        winesCollected = 0;
+        cakesCollected = 0;
+      } else {
+        // En Nivel 2 (o superior), reiniciamos solo los puntos
+        score = 0;
+      }
 
       levelIndicator.textContent = `NIVEL ${currentLevel}`;
       scoreVal.textContent = score;
-      if (beerCount) beerCount.textContent = `x${beersCollected}`;
+      
+      beerCount.textContent = `x${beersCollected}`;
+      wineCount.textContent = `x${winesCollected}`;
+      cakeCount.textContent = `x${cakesCollected}`;
+
+      if (beersCollected > 0) beerIndicator.classList.remove('opacity-40');
+      else beerIndicator.classList.add('opacity-40');
+
+      if (winesCollected > 0) wineIndicator.classList.remove('opacity-40');
+      else wineIndicator.classList.add('opacity-40');
+
+      if (cakesCollected > 0) cakeIndicator.classList.remove('opacity-40');
+      else cakeIndicator.classList.add('opacity-40');
 
       applyPalette('default');
       initSnake();
@@ -516,7 +583,6 @@
     }
 
     function setDirection(dx, dy) {
-      // Evitar giro de 180 grados instantáneo
       if (dx === -dirX && dy === -dirY) return;
       nextDirX = dx;
       nextDirY = dy;
@@ -528,52 +594,71 @@
       lastTime = time;
 
       animTimer += dt;
-      moveTimer += dt;
-
-      if (moveTimer >= moveInterval) {
-        moveTimer = 0;
-        updateSnake();
-      }
-
+      updateContinuous(dt);
       render();
+
       requestAnimationFrame(gameLoop);
     }
 
-    function updateSnake() {
-      dirX = nextDirX;
-      dirY = nextDirY;
+    function updateContinuous(dt) {
+      const moveStep = moveSpeed * dt;
+      const dx = targetGridX - headX;
+      const dy = targetGridY - headY;
+      const distToTarget = Math.hypot(dx, dy);
 
-      const head = snake[0];
-      const newHead = { x: head.x + dirX, y: head.y + dirY };
+      if (moveStep >= distToTarget) {
+        headX = targetGridX;
+        headY = targetGridY;
+        gridX = targetGridX;
+        gridY = targetGridY;
 
-      // Colisión con Bordes (Paredes) - salvo si hay puerta abierta
-      if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
-        if (barDoor && barDoor.isOpen && newHead.x === barDoor.x && newHead.y === barDoor.y) {
-          handleDoorPass();
-          return;
-        } else {
-          handleGameOver("¡Has chocado contra el muro del club!");
-          return;
+        pathHistory.unshift({ x: headX, y: headY });
+
+        if (checkTileEvents(gridX, gridY)) return;
+
+        if (nextDirX !== -dirX || nextDirY !== -dirY) {
+          dirX = nextDirX;
+          dirY = nextDirY;
+        }
+
+        targetGridX = gridX + dirX;
+        targetGridY = gridY + dirY;
+
+        const overflow = moveStep - distToTarget;
+        headX += dirX * overflow;
+        headY += dirY * overflow;
+      } else {
+        headX += dirX * moveStep;
+        headY += dirY * moveStep;
+      }
+
+      const lastHist = pathHistory[0];
+      if (!lastHist || Math.hypot(headX - lastHist.x, headY - lastHist.y) > 0.05) {
+        pathHistory.unshift({ x: headX, y: headY });
+        if (pathHistory.length > 500) pathHistory.pop();
+      }
+    }
+
+    function checkTileEvents(gx, gy) {
+      if (barDoor && barDoor.isOpen && gx === barDoor.x && gy === barDoor.y) {
+        handleDoorPass();
+        return true;
+      }
+
+      if (gx < 0 || gx >= GRID_COLS || gy < 0 || gy >= GRID_ROWS) {
+        handleGameOver("¡Has chocado contra el muro del club!");
+        return true;
+      }
+
+      const bodyPositions = getBodyGridPositions();
+      for (let i = 1; i < bodyPositions.length; i++) {
+        if (bodyPositions[i].x === gx && bodyPositions[i].y === gy) {
+          handleGameOver("¡Kike se ha tropezado con su propia cola!");
+          return true;
         }
       }
 
-      // Colisión con la Puerta si está en borde transitable
-      if (barDoor && barDoor.isOpen && newHead.x === barDoor.x && newHead.y === barDoor.y) {
-        handleDoorPass();
-        return;
-      }
-
-      // Colisión con su propio cuerpo
-      if (snake.some((seg, idx) => idx !== 0 && seg.x === newHead.x && seg.y === newHead.y)) {
-        handleGameOver("¡Kike se ha tropezado con su propia cola!");
-        return;
-      }
-
-      // Avanzar Serpiente
-      snake.unshift(newHead);
-
-      // Comprobar comida
-      if (food && newHead.x === food.x && newHead.y === food.y) {
+      if (food && gx === food.x && gy === food.y) {
         playEatSound();
         let pts = 10;
 
@@ -581,7 +666,7 @@
           pts = 20;
           beersCollected++;
           hasBeerInHand = true;
-          if (beerCount) beerCount.textContent = `x${beersCollected}`;
+          beerCount.textContent = `x${beersCollected}`;
           beerIndicator.classList.remove('opacity-40');
           applyPalette('beer');
         } else if (food.type === 'num50') {
@@ -589,25 +674,50 @@
           applyPalette('num50');
         } else if (food.type === 'wine') {
           pts = 30;
+          winesCollected++;
+          wineCount.textContent = `x${winesCollected}`;
+          wineIndicator.classList.remove('opacity-40');
           applyPalette('wine');
         } else if (food.type === 'cake') {
           pts = 40;
+          cakesCollected++;
+          cakeCount.textContent = `x${cakesCollected}`;
+          cakeIndicator.classList.remove('opacity-40');
           applyPalette('cake');
         }
 
         score += pts;
         scoreVal.textContent = score;
+        snakeLength += 1;
 
-        // Verificar si abre la puerta del BAR según nivel
         const target = LEVEL_TARGETS[currentLevel] || 150;
         if (score >= target && (!barDoor || !barDoor.isOpen)) {
           spawnBarDoor();
         }
 
         spawnFood();
-      } else {
-        snake.pop(); // Mantener longitud si no come
       }
+
+      return false;
+    }
+
+    function getPositionAtDistance(targetDist) {
+      let accumulated = 0;
+      for (let i = 0; i < pathHistory.length - 1; i++) {
+        const p1 = pathHistory[i];
+        const p2 = pathHistory[i + 1];
+        const segLen = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+
+        if (accumulated + segLen >= targetDist) {
+          const ratio = (targetDist - accumulated) / (segLen || 0.0001);
+          return {
+            x: p1.x + (p2.x - p1.x) * ratio,
+            y: p1.y + (p2.y - p1.y) * ratio
+          };
+        }
+        accumulated += segLen;
+      }
+      return pathHistory[pathHistory.length - 1] || { x: headX, y: headY };
     }
 
     function handleDoorPass() {
@@ -616,18 +726,18 @@
 
       if (currentLevel === 1) {
         playWinSound();
-        // Mostrar Transición Nivel 2
         endTitle.textContent = "¡NIVEL 1 COMPLETADO!";
         endTitle.className = "text-lg sm:text-xl text-yellow-400 glow-text mb-0.5";
-        endIcon.textContent = "🚪🍺🕺";
+        endIcon.textContent = "🚪🍺🍷🎂";
         endSubtitleContainer.className = "my-0.5 p-1.5 bg-blue-950/80 border border-cyan-500/80 rounded-lg w-full max-w-xs shadow-lg";
         endSubtitle.textContent = "¡HAS ENCONTRADO LA ENTRADA AL PUB! PREPÁRATE PARA EL NIVEL 2...";
         
         infoBox.classList.remove('hidden');
         infoTitle.textContent = "📍 INFORMACIÓN DE NIVEL 1 📍";
         infoContent.innerHTML = `
-          <p class="text-center text-cyan-300 font-bold">¡PUNTUACIÓN CONSEGUIDA: ${score} PTS!</p>
-          <p class="text-center text-pink-400 mt-1">Siguiente objetivo: Alcanzar ${LEVEL_TARGETS[2]} PTS en el Nivel 2 para entrar a la Gran Fiesta de los 50s.</p>
+          <p class="text-center text-cyan-300 font-bold">PUNTUACIÓN: ${score} PTS</p>
+          <p class="text-center text-yellow-400 text-[8px] my-0.5">🍺 x${beersCollected} | 🍷 x${winesCollected} | 🎂 x${cakesCollected}</p>
+          <p class="text-center text-pink-400 mt-1">Siguiente objetivo: Alcanzar ${LEVEL_TARGETS[2]} PTS en el Nivel 2.</p>
         `;
         infoFooter.textContent = "Pulsa el botón para continuar la fiesta en el Nivel 2";
 
@@ -641,7 +751,6 @@
 
         endOverlay.classList.remove('hidden');
       } else {
-        // Victoria Final del Juego (Nivel 2 completado)
         playWinSound();
         endTitle.textContent = "¡VICTORIA TOTAL!";
         endTitle.className = "text-lg sm:text-xl text-yellow-400 glow-text mb-0.5";
@@ -651,13 +760,12 @@
 
         infoBox.classList.remove('hidden');
         infoTitle.textContent = "📍 DATOS DE LA FIESTA 📍";
-        /* TEXTO EDITABLE DE INFORMACIÓN DE FIESTA FUTURA */
         infoContent.innerHTML = `
           <p>📅 <strong>Fecha:</strong> Sábado, 14 NOV</p>
           <p>⏰ <strong>Hora:</strong> 21:30h</p>
           <p>🏢 <strong>Lugar:</strong> C/ Eguilaz 10</p>
           <p class="text-center text-cyan-300"><strong>METRO BILBAO</strong></p>
-          <p class="text-center text-pink-400">Dress code: Synthwave 80s / No dress code</p>
+          <p class="text-center text-pink-400">Dress code: Synthwave 80s</p>
         `;
         infoFooter.textContent = "¡Esperamos celebrar este gran 50 cumpleaños por todo lo alto!";
 
@@ -689,128 +797,85 @@
       endOverlay.classList.remove('hidden');
     }
 
-    /**
-     * Dibuja al personaje principal (Kike) como Cabeza de Cuerpo Entero:
-     */
-    function drawKikeHead(cx, cy, size, dx, dy) {
+    function drawPartyGuest(cx, cy, size, guest, scaleFactor, animOffset) {
       ctx.save();
       ctx.translate(cx, cy);
 
-      const scale = size / 32;
+      const baseScale = ((size * 1.1) / 32) * scaleFactor;
+      const bounce = Math.sin(animTimer * 12 + animOffset) * 1.5 * baseScale;
 
-      // Orientar según la dirección horizontal
-      if (dx === -1) {
-        ctx.scale(-1, 1);
-      }
-
-      // Animación de bote
-      const bounce = Math.sin(animTimer * 12) * 1 * scale;
-
-      // Cuerpo / Camiseta roja de 50s
-      ctx.fillStyle = '#dc2626';
+      ctx.fillStyle = guest.shirt;
       ctx.beginPath();
-      ctx.roundRect(-6 * scale, (-1 * scale) + bounce, 12 * scale, 9 * scale, 2 * scale);
+      ctx.roundRect(-6 * baseScale, (-1 * baseScale) + bounce, 12 * baseScale, 9 * baseScale, 2 * baseScale);
       ctx.fill();
 
-      // Número "50" en la camiseta
-      ctx.fillStyle = '#facc15';
-      ctx.font = `bold ${Math.max(5, Math.floor(5.5 * scale))}px Arial, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('50', 0, (3.5 * scale) + bounce);
+      ctx.fillStyle = guest.pants;
+      ctx.fillRect(-4 * baseScale, (8 * baseScale) + bounce, 3 * baseScale, 4.5 * baseScale);
+      ctx.fillRect(1 * baseScale, (8 * baseScale) + bounce, 3 * baseScale, 4.5 * baseScale);
 
-      // Piernas cortas
-      ctx.fillStyle = '#1e293b';
-      ctx.fillRect(-4 * scale, (8 * scale) + bounce, 3 * scale, 4 * scale);
-      ctx.fillRect(1 * scale, (8 * scale) + bounce, 3 * scale, 4 * scale);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(-5 * baseScale, (12 * baseScale) + bounce, 4 * baseScale, 2 * baseScale);
+      ctx.fillRect(1 * baseScale, (12 * baseScale) + bounce, 4 * baseScale, 2 * baseScale);
 
-      // Zapatos
-      ctx.fillStyle = '#e2e8f0';
-      ctx.fillRect(-5 * scale, (11 * scale) + bounce, 4 * scale, 2 * scale);
-      ctx.fillRect(1 * scale, (11 * scale) + bounce, 4 * scale, 2 * scale);
-
-      // Cabeza
-      ctx.fillStyle = '#ffdbac';
+      ctx.fillStyle = guest.skin;
       ctx.beginPath();
-      ctx.arc(0, (-7 * scale) + bounce, 6.5 * scale, 0, Math.PI * 2);
+      ctx.arc(0, (-7 * baseScale) + bounce, 6.5 * baseScale, 0, Math.PI * 2);
       ctx.fill();
 
-      // Cabello curto retro
-      ctx.fillStyle = '#451a03';
-      ctx.beginPath();
-      ctx.arc(0, (-8.5 * scale) + bounce, 6.5 * scale, Math.PI * 1.1, Math.PI * 1.9);
-      ctx.fill();
-
-      if (hasBeerInHand) {
-        // Gafas Neón Party
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(-5 * scale, (-9 * scale) + bounce, 10 * scale, 3 * scale);
-        ctx.fillStyle = '#ec4899';
-        ctx.fillRect(-4 * scale, (-8.5 * scale) + bounce, 2.5 * scale, 1 * scale);
-        ctx.fillRect(1.5 * scale, (-8.5 * scale) + bounce, 2.5 * scale, 1 * scale);
-
-        // Sonrisa
-        ctx.strokeStyle = '#991b1b';
-        ctx.lineWidth = 1 * scale;
+      ctx.fillStyle = guest.hair;
+      if (guest.style === 'punk_mohawk' || guest.style === 'pink_punk') {
         ctx.beginPath();
-        ctx.arc(0, (-4.5 * scale) + bounce, 3 * scale, 0.1, Math.PI - 0.1);
-        ctx.stroke();
-
-        // Brazo sosteniendo Jarra de Cerveza helada
-        ctx.fillStyle = '#ffdbac';
-        ctx.fillRect(5 * scale, (0 * scale) + bounce, 3.5 * scale, 3 * scale);
-
-        // Jarra
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.fillRect(8 * scale, (-2 * scale) + bounce, 4.5 * scale, 6 * scale);
-        ctx.fillStyle = '#f59e0b';
-        ctx.fillRect(8.8 * scale, (-0.8 * scale) + bounce, 3 * scale, 4.2 * scale);
-        // Espuma
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(8.5 * scale, (-2 * scale) + bounce, 1.8 * scale, 0, Math.PI * 2);
-        ctx.arc(11 * scale, (-2.2 * scale) + bounce, 1.8 * scale, 0, Math.PI * 2);
+        ctx.moveTo(-2 * baseScale, (-12 * baseScale) + bounce);
+        ctx.lineTo(0, (-17 * baseScale) + bounce);
+        ctx.lineTo(2 * baseScale, (-12 * baseScale) + bounce);
+        ctx.closePath();
         ctx.fill();
+      } else if (guest.style === 'afro_boy') {
+        ctx.beginPath();
+        ctx.arc(0, (-8.5 * baseScale) + bounce, 8.5 * baseScale, Math.PI * 0.8, Math.PI * 2.2);
+        ctx.fill();
+      } else if (guest.style.includes('girl') || guest.style === 'disco_queen') {
+        ctx.beginPath();
+        ctx.arc(0, (-8 * baseScale) + bounce, 7 * baseScale, Math.PI * 0.9, Math.PI * 2.1);
+        ctx.fill();
+        ctx.fillRect(-7 * baseScale, (-8 * baseScale) + bounce, 3 * baseScale, 8 * baseScale);
+        ctx.fillRect(4 * baseScale, (-8 * baseScale) + bounce, 3 * baseScale, 8 * baseScale);
       } else {
-        // Ojos
-        ctx.fillStyle = '#0f172a';
         ctx.beginPath();
-        ctx.arc(2 * scale, (-8 * scale) + bounce, 1 * scale, 0, Math.PI * 2);
-        ctx.arc(-2 * scale, (-8 * scale) + bounce, 1 * scale, 0, Math.PI * 2);
+        ctx.arc(0, (-8.5 * baseScale) + bounce, 6.8 * baseScale, Math.PI * 1.1, Math.PI * 1.9);
         ctx.fill();
-
-        // Sonrisa
-        ctx.strokeStyle = '#991b1b';
-        ctx.lineWidth = 1 * scale;
-        ctx.beginPath();
-        ctx.arc(0, (-4.8 * scale) + bounce, 2.2 * scale, 0.2, Math.PI - 0.2);
-        ctx.stroke();
       }
+
+      ctx.fillStyle = '#111827';
+      ctx.beginPath();
+      ctx.arc(2 * baseScale, (-7.5 * baseScale) + bounce, 1 * baseScale, 0, Math.PI * 2);
+      ctx.arc(-2 * baseScale, (-7.5 * baseScale) + bounce, 1 * baseScale, 0, Math.PI * 2);
+      ctx.fill();
 
       ctx.restore();
     }
 
     function render() {
-      // Fondo Synthwave con Rejilla Neón
       ctx.fillStyle = currentPalette.bg;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Dibujar cuadrícula neón de fondo
       ctx.strokeStyle = currentPalette.grid;
       ctx.lineWidth = 0.5;
-      for (let i = 0; i <= GRID_SIZE; i++) {
+
+      for (let i = 0; i <= GRID_COLS; i++) {
         ctx.beginPath();
         ctx.moveTo(i * tileSize, 0);
         ctx.lineTo(i * tileSize, canvas.height);
         ctx.stroke();
+      }
 
+      for (let j = 0; j <= GRID_ROWS; j++) {
         ctx.beginPath();
-        ctx.moveTo(0, i * tileSize);
-        ctx.lineTo(canvas.width, i * tileSize);
+        ctx.moveTo(0, j * tileSize);
+        ctx.lineTo(canvas.width, j * tileSize);
         ctx.stroke();
       }
 
-      // Dibujar Puerta de BAR / PUB si está activa
       if (barDoor && barDoor.isOpen) {
         const bx = barDoor.x * tileSize;
         const by = barDoor.y * tileSize;
@@ -819,12 +884,10 @@
         ctx.fillStyle = '#000000';
         ctx.fillRect(bx, by, tileSize, tileSize);
 
-        // Marco Neón resplandeciente
         ctx.strokeStyle = '#ec4899';
         ctx.lineWidth = 2;
         ctx.strokeRect(bx + 1, by + 1, tileSize - 2, tileSize - 2);
 
-        // Cartel "BAR"
         ctx.font = `bold ${tileSize * 0.5}px sans-serif`;
         ctx.fillStyle = '#facc15';
         ctx.textAlign = 'center';
@@ -833,7 +896,6 @@
         ctx.restore();
       }
 
-      // Dibujar Comida
       if (food) {
         const fx = food.x * tileSize + tileSize / 2;
         const fy = food.y * tileSize + tileSize / 2;
@@ -848,7 +910,6 @@
         else if (food.type === 'wine') icon = '🍷';
         else if (food.type === 'cake') icon = '🎂';
 
-        // Pulso de resplandor para la comida
         const scalePulse = 1 + Math.sin(animTimer * 10) * 0.1;
         ctx.translate(fx, fy);
         ctx.scale(scalePulse, scalePulse);
@@ -856,35 +917,145 @@
         ctx.restore();
       }
 
-      // Dibujar Serpiente
-      snake.forEach((seg, index) => {
-        const sx = seg.x * tileSize + tileSize / 2;
-        const sy = seg.y * tileSize + tileSize / 2;
+      // 1. RENDERIZADO DE PERSONAJES EN LA COLA
+      for (let i = snakeLength - 1; i >= 1; i--) {
+        const pos = getPositionAtDistance(i * 1.0);
+        const sx = pos.x * tileSize + tileSize / 2;
+        const sy = pos.y * tileSize + tileSize / 2;
 
-        if (index === 0) {
-          // Cabeza: Muñeco Kike de cuerpo entero
-          drawKikeHead(sx, sy, tileSize * 1.1, dirX, dirY);
-        } else {
-          // Cola / Cuerpo Neón Synthwave
-          ctx.save();
-          const radius = (tileSize / 2) * (1 - (index / (snake.length + 5)) * 0.35);
+        let scaleFactor = 1.0;
+        const totalBodySegments = snakeLength - 1;
+        const distanceFromEnd = totalBodySegments - i;
 
-          ctx.fillStyle = currentPalette.body;
-          ctx.beginPath();
-          ctx.arc(sx, sy, Math.max(3, radius), 0, Math.PI * 2);
-          ctx.fill();
-
-          // Núcleo brillante neón
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.arc(sx, sy, Math.max(1.5, radius * 0.4), 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
+        if (distanceFromEnd === 0) {
+          scaleFactor = 0.65;
+        } else if (distanceFromEnd === 1) {
+          scaleFactor = 0.77;
+        } else if (distanceFromEnd === 2) {
+          scaleFactor = 0.88;
         }
-      });
+
+        const guestDesign = (guestList && guestList.length > 0) 
+          ? guestList[(i - 1) % guestList.length] 
+          : GUEST_DESIGNS[0];
+
+        if (guestDesign) {
+          drawPartyGuest(sx, sy, tileSize, guestDesign, scaleFactor, i * 0.5);
+        }
+      }
+
+      // 2. RENDERIZADO DE LA CABEZA (KIKE)
+      const hsx = headX * tileSize + tileSize / 2;
+      const hsy = headY * tileSize + tileSize / 2;
+
+      drawKikeHead(hsx, hsy, tileSize * 1.1, dirX, dirY);
     }
 
-    // Event Listeners y Controles
+    function drawKikeHead(cx, cy, size, dX, dY) {
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      const scale = size / 32;
+
+      if (dX === -1) {
+        ctx.scale(-1, 1);
+      }
+
+      const bounce = Math.sin(animTimer * 14) * 1.5 * scale;
+      const legCycle = Math.sin(animTimer * 16) * 3 * scale;
+
+      // Sombra
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.beginPath();
+      ctx.ellipse(0, 13 * scale, 9 * scale, 3 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Piernas/Pantalones
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect((-4 * scale) - legCycle, (8 * scale) + bounce, 3 * scale, 5 * scale);
+      ctx.fillRect((1 * scale) + legCycle, (8 * scale) + bounce, 3 * scale, 5 * scale);
+
+      // Zapatos
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect((-5 * scale) - legCycle, (12 * scale) + bounce, 4 * scale, 2 * scale);
+      ctx.fillRect((1 * scale) + legCycle, (12 * scale) + bounce, 4 * scale, 2 * scale);
+
+      // Cuerpo / Camiseta de 50s
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.roundRect(-6 * scale, (-1 * scale) + bounce, 12 * scale, 10 * scale, 2 * scale);
+      ctx.fill();
+
+      // Número "50" en el pecho
+      ctx.fillStyle = '#facc15';
+      ctx.font = `bold ${Math.max(6, Math.floor(6.5 * scale))}px Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('50', 0, (4 * scale) + bounce);
+
+      // Cabeza / Tono de piel
+      ctx.fillStyle = '#ffdbac';
+      ctx.beginPath();
+      ctx.arc(0, (-7 * scale) + bounce, 7 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cabello
+      ctx.fillStyle = '#451a03';
+      ctx.beginPath();
+      ctx.arc(0, (-8.5 * scale) + bounce, 7 * scale, Math.PI * 1.1, Math.PI * 1.9);
+      ctx.fill();
+
+      // Cara & Cerveza
+      if (hasBeerInHand) {
+        // Gafas de Sol Party
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(-5 * scale, (-9 * scale) + bounce, 10 * scale, 3.5 * scale);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(-4 * scale, (-8.5 * scale) + bounce, 2 * scale, 1 * scale);
+        ctx.fillRect(1 * scale, (-8.5 * scale) + bounce, 2 * scale, 1 * scale);
+
+        // Sonrisa
+        ctx.strokeStyle = '#991b1b';
+        ctx.lineWidth = 1.2 * scale;
+        ctx.beginPath();
+        ctx.arc(0, (-4.5 * scale) + bounce, 3.5 * scale, 0.1, Math.PI - 0.1);
+        ctx.stroke();
+
+        // Jarra de Cerveza
+        ctx.fillStyle = '#ffdbac';
+        ctx.fillRect(5 * scale, (0 * scale) + bounce, 4 * scale, 3 * scale);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.fillRect(8 * scale, (-2 * scale) + bounce, 5 * scale, 7 * scale);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(8.8 * scale, (-0.5 * scale) + bounce, 3.4 * scale, 5 * scale);
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(8.5 * scale, (-2 * scale) + bounce, 2 * scale, 0, Math.PI * 2);
+        ctx.arc(11 * scale, (-2.5 * scale) + bounce, 2.2 * scale, 0, Math.PI * 2);
+        ctx.arc(13 * scale, (-2 * scale) + bounce, 1.8 * scale, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(2 * scale, (-8 * scale) + bounce, 1.2 * scale, 0, Math.PI * 2);
+        ctx.arc(-2 * scale, (-8 * scale) + bounce, 1.2 * scale, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#991b1b';
+        ctx.lineWidth = 1 * scale;
+        ctx.beginPath();
+        ctx.arc(0, (-4.8 * scale) + bounce, 2.5 * scale, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffdbac';
+        ctx.fillRect((-7.5 * scale) + legCycle, (1 * scale) + bounce, 2.5 * scale, 5 * scale);
+        ctx.fillRect((5 * scale) - legCycle, (1 * scale) + bounce, 2.5 * scale, 5 * scale);
+      }
+
+      ctx.restore();
+    }
+
+    // Event Listeners
     document.getElementById('start-game-btn').addEventListener('click', () => {
       startGame(1);
     });
@@ -921,11 +1092,6 @@
           break;
       }
     });
-
-    document.getElementById('btn-up').addEventListener('click', () => setDirection(0, -1));
-    document.getElementById('btn-down').addEventListener('click', () => setDirection(0, 1));
-    document.getElementById('btn-left').addEventListener('click', () => setDirection(-1, 0));
-    document.getElementById('btn-right').addEventListener('click', () => setDirection(1, 0));
 
     // Gestos de Swipe en Móvil
     let touchStartX = 0;
