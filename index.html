@@ -185,9 +185,9 @@
   </div>
 
   <script>
-    // Variables de Grid (15 columnas de ancho, 18 filas de alto para +20% de altura vertical)
-    const GRID_COLS = 15;
-    const GRID_ROWS = 18;
+    // Variables de Grid (Reducido número de casillas para hacerlas ~25% más grandes sin alterar las dimensiones totales)
+    const GRID_COLS = 12;
+    const GRID_ROWS = 14;
     let tileSize = 20;
 
     // Puntuación objetivo por niveles
@@ -512,12 +512,12 @@
     }
 
     function initSnake() {
-      gridX = 5;
-      gridY = 7;
-      targetGridX = 5;
-      targetGridY = 7;
-      headX = 5;
-      headY = 7;
+      gridX = 4;
+      gridY = 6;
+      targetGridX = 4;
+      targetGridY = 6;
+      headX = 4;
+      headY = 6;
       dirX = 1; dirY = 0;
       nextDirX = 1; nextDirY = 0;
       snakeLength = 1;
@@ -531,7 +531,7 @@
 
       pathHistory = [];
       for (let i = 0; i <= 20; i += 0.05) {
-        pathHistory.push({ x: 5 - i, y: 7 });
+        pathHistory.push({ x: 4 - i, y: 6 });
       }
 
       targetGridX = gridX + dirX;
