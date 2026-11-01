@@ -187,13 +187,15 @@
   <script>
     // Variables de Grid (Reducido número de casillas para hacerlas ~25% más grandes sin alterar las dimensiones totales)
     const GRID_COLS = 12;
-    const GRID_ROWS = 14;
+    const NORMAL_GRID_ROWS = 14;
+    const EXTENDED_GRID_ROWS = 17; // +20% de filas extra cuando el bar aparece (zona inferior de discoteca)
+    let GRID_ROWS = NORMAL_GRID_ROWS;
     let tileSize = 20;
 
     // Puntuación objetivo por niveles
     const LEVEL_TARGETS = {
       1: 120, // Puntos requeridos para abrir la puerta en Nivel 1
-      2: 250  // Puntos requeridos para ganar el Nivel 2
+      2: 200  // Puntos adicionales requeridos en Nivel 2
     };
 
     // Paletas de Color Neón Synthwave 80s
@@ -244,10 +246,12 @@
     // Estado del Juego
     let currentLevel = 1;
     let score = 0;
+    let levelTargetScore = 120; // Puntuación objetivo acumulada para abrir la puerta
     let beersCollected = 0;
     let winesCollected = 0;
     let cakesCollected = 0;
     let isGameRunning = false;
+    let isEnteringDoor = false; // Estado de animación de entrada completa de la cola
     let lastTime = 0;
     let animTimer = 0;
 
@@ -387,22 +391,113 @@
       });
     }
 
-    function playWinSound() {
-      if (isMuted || !audioCtx) return;
-      const now = audioCtx.currentTime;
-      const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
-      notes.forEach((f, i) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(f, now + i * 0.1);
-        gain.gain.setValueAtTime(0.25, now + i * 0.1);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.3);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(now + i * 0.1);
-        osc.stop(now + i * 0.1 + 0.3);
-      });
+    // Melodía triunfal potente de 10 segundos ("We Are The Champions" - Queen)
+    function playRockVictoryFanfare() {
+      if (isMuted) return;
+      
+      // Asegurar que el contexto de audio esté activo y despausado
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      try {
+        const now = audioCtx.currentTime;
+
+        // Frecuencias más agudas y alegres (Modo Mayor / Sol Mayor)
+        const G4 = 392.00, A4 = 440.00, B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, FS5 = 739.99, G5 = 783.99, A5 = 880.00, B5 = 987.77;
+
+        // Ritmo Rápido, Festivo y Animado (Tempo super ágil)
+        const notes = [
+          // Frase 1: Subida rápida y alegre
+          { time: 0.00, freq: G4,  dur: 0.12 },
+          { time: 0.15, freq: B4,  dur: 0.12 },
+          { time: 0.30, freq: D5,  dur: 0.12 },
+          { time: 0.45, freq: G5,  dur: 0.25 },
+          { time: 0.75, freq: FS5, dur: 0.15 },
+          { time: 0.95, freq: G5,  dur: 0.35 },
+
+          // Frase 2: Brincos festivos
+          { time: 1.35, freq: B5,  dur: 0.20 },
+          { time: 1.60, freq: A5,  dur: 0.20 },
+          { time: 1.85, freq: G5,  dur: 0.20 },
+          { time: 2.10, freq: FS5, dur: 0.20 },
+          { time: 2.35, freq: G5,  dur: 0.40 },
+
+          // Frase 3: Repetición veloz con clímax
+          { time: 2.85, freq: D5,  dur: 0.12 },
+          { time: 3.00, freq: E5,  dur: 0.12 },
+          { time: 3.15, freq: FS5, dur: 0.12 },
+          { time: 3.30, freq: G5,  dur: 0.30 },
+          { time: 3.65, freq: A5,  dur: 0.30 },
+          { time: 4.00, freq: B5,  dur: 0.50 },
+
+          // Frase 4: Riff alegre de celebración (Segunda mitad)
+          { time: 4.60, freq: G5,  dur: 0.15 },
+          { time: 4.80, freq: G5,  dur: 0.15 },
+          { time: 5.00, freq: B5,  dur: 0.25 },
+          { time: 5.30, freq: A5,  dur: 0.25 },
+          { time: 5.60, freq: G5,  dur: 0.25 },
+
+          { time: 5.95, freq: D5,  dur: 0.15 },
+          { time: 6.15, freq: D5,  dur: 0.15 },
+          { time: 6.35, freq: G5,  dur: 0.25 },
+          { time: 6.65, freq: FS5, dur: 0.25 },
+          { time: 6.95, freq: G5,  dur: 0.45 },
+
+          // Cierre Triunfal y Alegre
+          { time: 7.50, freq: E5,  dur: 0.15 },
+          { time: 7.70, freq: FS5, dur: 0.15 },
+          { time: 7.90, freq: G5,  dur: 0.25 },
+          { time: 8.20, freq: A5,  dur: 0.25 },
+          { time: 8.50, freq: B5,  dur: 0.25 },
+          { time: 8.80, freq: G5,  dur: 0.90 }
+        ];
+
+        notes.forEach(step => {
+          const startTime = now + step.time;
+          const stopTime = startTime + step.dur;
+
+          // Oscilador Principal (Melodía alegre brillante)
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(step.freq, startTime);
+
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.4, startTime + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, stopTime);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          osc.start(startTime);
+          osc.stop(stopTime);
+
+          // Oscilador Secundario (Armónico de acompañamiento alegre)
+          const oscSub = audioCtx.createOscillator();
+          const gainSub = audioCtx.createGain();
+
+          oscSub.type = 'square';
+          oscSub.frequency.setValueAtTime(step.freq / 2, startTime);
+
+          gainSub.gain.setValueAtTime(0, startTime);
+          gainSub.gain.linearRampToValueAtTime(0.12, startTime + 0.02);
+          gainSub.gain.exponentialRampToValueAtTime(0.001, stopTime);
+
+          oscSub.connect(gainSub);
+          gainSub.connect(audioCtx.destination);
+
+          oscSub.start(startTime);
+          oscSub.stop(stopTime);
+        });
+
+      } catch (e) {
+        console.error("Audio playback error:", e);
+      }
     }
 
     function resizeCanvas() {
@@ -453,9 +548,12 @@
       let valid = false;
       let rx, ry;
 
+      // Solamente spawnear dentro del área de juego activa (sin tocar la fachada del bar si está abierta)
+      const playAreaRows = (barDoor && barDoor.isOpen) ? (EXTENDED_GRID_ROWS - 3) : GRID_ROWS;
+
       while (!valid) {
         rx = Math.floor(Math.random() * (GRID_COLS - 2)) + 1;
-        ry = Math.floor(Math.random() * (GRID_ROWS - 2)) + 1;
+        ry = Math.floor(Math.random() * (playAreaRows - 2)) + 1;
 
         const onSnake = getBodyGridPositions().some(pos => pos.x === rx && pos.y === ry);
         const onDoor = barDoor && barDoor.x === rx && barDoor.y === ry;
@@ -469,32 +567,13 @@
     }
 
     function spawnBarDoor() {
-      let valid = false;
-      let dx, dy;
+      // Alcanzado el objetivo: expandir el escenario verticalmente un 20%
+      GRID_ROWS = EXTENDED_GRID_ROWS;
+      resizeCanvas();
 
-      while (!valid) {
-        const wallChoice = Math.floor(Math.random() * 4);
-        if (wallChoice === 0) {
-          dx = Math.floor(Math.random() * (GRID_COLS - 4)) + 2;
-          dy = 0;
-        } else if (wallChoice === 1) {
-          dx = Math.floor(Math.random() * (GRID_COLS - 4)) + 2;
-          dy = GRID_ROWS - 1;
-        } else if (wallChoice === 2) {
-          dx = 0;
-          dy = Math.floor(Math.random() * (GRID_ROWS - 4)) + 2;
-        } else {
-          dx = GRID_COLS - 1;
-          dy = Math.floor(Math.random() * (GRID_ROWS - 4)) + 2;
-        }
-
-        const onSnake = getBodyGridPositions().some(pos => pos.x === dx && pos.y === dy);
-        const onFood = food && food.x === dx && food.y === dy;
-
-        if (!onSnake && !onFood) {
-          valid = true;
-        }
-      }
+      // Colocar la puerta centrada justo en la fachada del Pub/Disco en la nueva zona
+      const dx = Math.floor(GRID_COLS / 2);
+      const dy = EXTENDED_GRID_ROWS - 2;
 
       barDoor = { x: dx, y: dy, isOpen: true };
       playDoorOpenSound();
@@ -512,6 +591,8 @@
     }
 
     function initSnake() {
+      GRID_ROWS = NORMAL_GRID_ROWS;
+      resizeCanvas();
       gridX = 4;
       gridY = 6;
       targetGridX = 4;
@@ -523,6 +604,7 @@
       snakeLength = 1;
       hasBeerInHand = false;
       barDoor = null;
+      isEnteringDoor = false;
 
       guestList = [];
       for (let i = 0; i < 50; i++) {
@@ -541,16 +623,17 @@
     function startGame(level = 1) {
       initAudio();
       currentLevel = level;
-      
-      // Reiniciar puntos si volvemos a empezar o si es nivel 1, pero conservar bebidas y tartas entre niveles
+
+      // Si se inicia una partida nueva desde Nivel 1, reiniciamos totalmente la puntuación y contadores
       if (level === 1) {
         score = 0;
         beersCollected = 0;
         winesCollected = 0;
         cakesCollected = 0;
-      } else {
-        // En Nivel 2 (o superior), reiniciamos solo los puntos
-        score = 0;
+        levelTargetScore = LEVEL_TARGETS[1];
+      } else if (level === 2) {
+        // En Nivel 2 conservamos la puntuación actual y añadimos 200 puntos adicionales como objetivo
+        levelTargetScore = score + LEVEL_TARGETS[2];
       }
 
       levelIndicator.textContent = `NIVEL ${currentLevel}`;
@@ -577,13 +660,14 @@
       endOverlay.classList.add('hidden');
 
       isGameRunning = true;
+      isEnteringDoor = false;
       startMusic();
       lastTime = performance.now();
       requestAnimationFrame(gameLoop);
     }
 
     function setDirection(dx, dy) {
-      if (dx === -dirX && dy === -dirY) return;
+      if (isEnteringDoor || (dx === -dirX && dy === -dirY)) return;
       nextDirX = dx;
       nextDirY = dy;
     }
@@ -614,7 +698,16 @@
 
         pathHistory.unshift({ x: headX, y: headY });
 
-        if (checkTileEvents(gridX, gridY)) return;
+        // Si estamos en proceso de entrar al bar, la serpiente continúa directo hacia la puerta y la cola va acortándose
+        if (isEnteringDoor) {
+          snakeLength -= 1;
+          if (snakeLength <= 0) {
+            finishDoorPass();
+            return;
+          }
+        } else if (checkTileEvents(gridX, gridY)) {
+          return;
+        }
 
         if (nextDirX !== -dirX || nextDirY !== -dirY) {
           dirX = nextDirX;
@@ -641,13 +734,25 @@
 
     function checkTileEvents(gx, gy) {
       if (barDoor && barDoor.isOpen && gx === barDoor.x && gy === barDoor.y) {
-        handleDoorPass();
+        startDoorPassAnimation();
         return true;
       }
 
+      // Límites de la rejilla
       if (gx < 0 || gx >= GRID_COLS || gy < 0 || gy >= GRID_ROWS) {
         handleGameOver("¡Has chocado contra el muro del club!");
         return true;
+      }
+
+      // Muro de la fachada del BAR: si el bar está abierto, la zona inferior del edificio es sólida
+      // salvo la columna central/camino atravesable que da acceso directo a la puerta
+      const playAreaRows = (barDoor && barDoor.isOpen) ? (EXTENDED_GRID_ROWS - 3) : GRID_ROWS;
+      if (barDoor && barDoor.isOpen && gy >= playAreaRows) {
+        // Permitimos el paso libre en la columna de la puerta (barDoor.x) hacia la entrada
+        if (gx !== barDoor.x) {
+          handleGameOver("¡Has chocado contra la pared del VIP Club!");
+          return true;
+        }
       }
 
       const bodyPositions = getBodyGridPositions();
@@ -690,8 +795,7 @@
         scoreVal.textContent = score;
         snakeLength += 1;
 
-        const target = LEVEL_TARGETS[currentLevel] || 150;
-        if (score >= target && (!barDoor || !barDoor.isOpen)) {
+        if (score >= levelTargetScore && (!barDoor || !barDoor.isOpen)) {
           spawnBarDoor();
         }
 
@@ -721,11 +825,25 @@
     }
 
     function handleDoorPass() {
-      isGameRunning = false;
+      // Función mantenida por compatibilidad si es invocada
+      startDoorPassAnimation();
+    }
+
+    function startDoorPassAnimation() {
+      if (isEnteringDoor) return;
+      isEnteringDoor = true;
       stopMusic();
+      playRockVictoryFanfare();
+      // Fijar dirección hacia adelante dentro de la puerta
+      nextDirX = dirX;
+      nextDirY = dirY;
+    }
+
+    function finishDoorPass() {
+      isGameRunning = false;
+      isEnteringDoor = false;
 
       if (currentLevel === 1) {
-        playWinSound();
         endTitle.textContent = "¡NIVEL 1 COMPLETADO!";
         endTitle.className = "text-lg sm:text-xl text-yellow-400 glow-text mb-0.5";
         endIcon.textContent = "🚪🍺🍷🎂";
@@ -735,9 +853,9 @@
         infoBox.classList.remove('hidden');
         infoTitle.textContent = "📍 INFORMACIÓN DE NIVEL 1 📍";
         infoContent.innerHTML = `
-          <p class="text-center text-cyan-300 font-bold">PUNTUACIÓN: ${score} PTS</p>
+          <p class="text-center text-cyan-300 font-bold">PUNTUACIÓN ACTUAL: ${score} PTS</p>
           <p class="text-center text-yellow-400 text-[8px] my-0.5">🍺 x${beersCollected} | 🍷 x${winesCollected} | 🎂 x${cakesCollected}</p>
-          <p class="text-center text-pink-400 mt-1">Siguiente objetivo: Alcanzar ${LEVEL_TARGETS[2]} PTS en el Nivel 2.</p>
+          <p class="text-center text-pink-400 mt-1">Siguiente objetivo: Conseguir 200 PTS más (Alcanzar ${score + LEVEL_TARGETS[2]} PTS) en el Nivel 2.</p>
         `;
         infoFooter.textContent = "Pulsa el botón para continuar la fiesta en el Nivel 2";
 
@@ -751,7 +869,6 @@
 
         endOverlay.classList.remove('hidden');
       } else {
-        playWinSound();
         endTitle.textContent = "¡VICTORIA TOTAL!";
         endTitle.className = "text-lg sm:text-xl text-yellow-400 glow-text mb-0.5";
         endIcon.textContent = "🎉🍻🕺🎂";
@@ -859,41 +976,30 @@
       ctx.fillStyle = currentPalette.bg;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // Si el bar está activo, dibujamos la zona inferior decorada como Discoteca/Pub Neón
+      const isBarActive = barDoor && barDoor.isOpen;
+      const playAreaRows = isBarActive ? (EXTENDED_GRID_ROWS - 3) : GRID_ROWS;
+
       ctx.strokeStyle = currentPalette.grid;
       ctx.lineWidth = 0.5;
 
       for (let i = 0; i <= GRID_COLS; i++) {
         ctx.beginPath();
         ctx.moveTo(i * tileSize, 0);
-        ctx.lineTo(i * tileSize, canvas.height);
+        ctx.lineTo(i * tileSize, playAreaRows * tileSize);
         ctx.stroke();
       }
 
-      for (let j = 0; j <= GRID_ROWS; j++) {
+      for (let j = 0; j <= playAreaRows; j++) {
         ctx.beginPath();
         ctx.moveTo(0, j * tileSize);
         ctx.lineTo(canvas.width, j * tileSize);
         ctx.stroke();
       }
 
-      if (barDoor && barDoor.isOpen) {
-        const bx = barDoor.x * tileSize;
-        const by = barDoor.y * tileSize;
-
-        ctx.save();
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(bx, by, tileSize, tileSize);
-
-        ctx.strokeStyle = '#ec4899';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(bx + 1, by + 1, tileSize - 2, tileSize - 2);
-
-        ctx.font = `bold ${tileSize * 0.5}px sans-serif`;
-        ctx.fillStyle = '#facc15';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('🚪BAR', bx + tileSize / 2, by + tileSize / 2);
-        ctx.restore();
+      // Dibujar la Discoteca / Pub Synthwave Neón en las filas extra inferiores cuando el bar se abre
+      if (isBarActive) {
+        drawSynthwaveBarFacade(playAreaRows);
       }
 
       if (food) {
@@ -945,10 +1051,211 @@
       }
 
       // 2. RENDERIZADO DE LA CABEZA (KIKE)
-      const hsx = headX * tileSize + tileSize / 2;
-      const hsy = headY * tileSize + tileSize / 2;
+      if (snakeLength > 0) {
+        const hsx = headX * tileSize + tileSize / 2;
+        const hsy = headY * tileSize + tileSize / 2;
 
-      drawKikeHead(hsx, hsy, tileSize * 1.1, dirX, dirY);
+        drawKikeHead(hsx, hsy, tileSize * 1.1, dirX, dirY);
+      }
+    }
+
+    /**
+     * Dibuja la majestuosa fachada del Bar/Discoteca Synthwave 80s en la zona desplegada
+     */
+    function drawSynthwaveBarFacade(startRow) {
+      const startY = startRow * tileSize;
+      const barHeight = (EXTENDED_GRID_ROWS - startRow) * tileSize;
+      const w = canvas.width;
+      const doorCol = barDoor.x;
+      const doorX = doorCol * tileSize;
+      const doorY = barDoor.y * tileSize;
+
+      ctx.save();
+      
+      // 1. Fondo principal de la fachada del club nocturno
+      const gradBg = ctx.createLinearGradient(0, startY, 0, startY + barHeight);
+      gradBg.addColorStop(0, '#1a082e');
+      gradBg.addColorStop(0.4, '#0d021a');
+      gradBg.addColorStop(1, '#040008');
+      ctx.fillStyle = gradBg;
+      ctx.fillRect(0, startY, w, barHeight);
+
+      // Cornisa Neón Magenta en el tejado de la discoteca
+      ctx.fillStyle = '#ec4899';
+      ctx.shadowColor = '#ec4899';
+      ctx.shadowBlur = 10;
+      ctx.fillRect(0, startY, w, 3);
+
+      // 2. REDISEÑO LATERAL LIMPIO, ORGANIZADO Y SIN SOLAPAMIENTOS
+      const pulseLight = (Math.sin(animTimer * 8) + 1) / 2;
+      const pulseLight2 = (Math.cos(animTimer * 8) + 1) / 2;
+      
+      // Ancho utilizable en cada lateral
+      const leftWidth = doorX;
+      const rightWidth = w - (doorX + tileSize);
+
+      // --- SECCIÓN IZQUIERDA (CLUB & KIKE) ---
+      if (leftWidth > 12) {
+        const leftCenterX = leftWidth / 2;
+
+        // Placa Neón retro vertical para "CLUB" y "KIKE"
+        const badgeW = Math.min(leftWidth - 8, tileSize * 2.8);
+        const badgeX = leftCenterX - badgeW / 2;
+        const badgeY = startY + tileSize * 0.2;
+        const badgeH = tileSize * 1.35;
+
+        // Marcador Neón de fondo
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.strokeStyle = '#06b6d4';
+        ctx.shadowColor = '#06b6d4';
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // Texto 1: "CLUB"
+        ctx.fillStyle = '#06b6d4';
+        ctx.font = `bold ${Math.max(6, Math.floor(tileSize * 0.38))}px 'Press Start 2P', monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🕺 CLUB', leftCenterX, badgeY + badgeH * 0.3);
+
+        // Texto 2: "KIKE"
+        ctx.fillStyle = '#facc15';
+        ctx.shadowColor = '#facc15';
+        ctx.shadowBlur = 10;
+        ctx.fillText('KIKE', leftCenterX, badgeY + badgeH * 0.72);
+
+        // Ecualizador Neón animado abajo en la esquina izquierda
+        const eqY = startY + tileSize * 1.7;
+        const barW = Math.max(2, tileSize * 0.15);
+        for (let b = 0; b < 4; b++) {
+          const hFactor = (b % 2 === 0) ? pulseLight : pulseLight2;
+          const barH = (tileSize * 0.45) * (0.3 + hFactor * 0.7);
+          const bx = leftCenterX - (2 * barW) + (b * (barW + 2));
+          ctx.fillStyle = '#ec4899';
+          ctx.shadowColor = '#ec4899';
+          ctx.shadowBlur = 4;
+          ctx.fillRect(bx, eqY - barH, barW, barH);
+        }
+      }
+
+      // --- SECCIÓN DERECHA (50S & PARTY) ---
+      if (rightWidth > 12) {
+        const rightCenterX = (doorX + tileSize) + (rightWidth / 2);
+
+        // Placa Neón retro vertical para "50S" y "PARTY"
+        const badgeW = Math.min(rightWidth - 8, tileSize * 2.8);
+        const badgeX = rightCenterX - badgeW / 2;
+        const badgeY = startY + tileSize * 0.2;
+        const badgeH = tileSize * 1.35;
+
+        // Marcador Neón de fondo
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.strokeStyle = '#f43f5e';
+        ctx.shadowColor = '#f43f5e';
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // Texto 1: "50S"
+        ctx.fillStyle = '#f43f5e';
+        ctx.font = `bold ${Math.max(6, Math.floor(tileSize * 0.38))}px 'Press Start 2P', monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('50S 🍸', rightCenterX, badgeY + badgeH * 0.3);
+
+        // Texto 2: "PARTY"
+        ctx.fillStyle = '#ec4899';
+        ctx.shadowColor = '#ec4899';
+        ctx.shadowBlur = 10;
+        ctx.fillText('PARTY', rightCenterX, badgeY + badgeH * 0.72);
+
+        // Ecualizador Neón animado abajo en la esquina derecha
+        const eqY = startY + tileSize * 1.7;
+        const barW = Math.max(2, tileSize * 0.15);
+        for (let b = 0; b < 4; b++) {
+          const hFactor = (b % 2 === 0) ? pulseLight2 : pulseLight;
+          const barH = (tileSize * 0.45) * (0.3 + hFactor * 0.7);
+          const bx = rightCenterX - (2 * barW) + (b * (barW + 2));
+          ctx.fillStyle = '#06b6d4';
+          ctx.shadowColor = '#06b6d4';
+          ctx.shadowBlur = 4;
+          ctx.fillRect(bx, eqY - barH, barW, barH);
+        }
+      }
+
+      // 3. CAMINO VIP INTUITIVO (ALFOMBRA ROJA Y FLECHAS GUÍA HASTA LA PUERTA)
+      const carpetTopY = startY;
+      const carpetHeight = (EXTENDED_GRID_ROWS - startRow) * tileSize;
+
+      // Alfombra Roja Neón brillante que indica exactamente la columna por la que pasar
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(220, 38, 38, 0.85)';
+      ctx.fillRect(doorX, carpetTopY, tileSize, carpetHeight);
+
+      // Bordes dorados neón para marcar los límites transitables del pasillo
+      ctx.strokeStyle = '#facc15';
+      ctx.shadowColor = '#facc15';
+      ctx.shadowBlur = 8;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(doorX, carpetTopY);
+      ctx.lineTo(doorX, carpetTopY + carpetHeight);
+      ctx.moveTo(doorX + tileSize, carpetTopY);
+      ctx.lineTo(doorX + tileSize, carpetTopY + carpetHeight);
+      ctx.stroke();
+
+      // Postes con cordón VIP dorados a los lados para denotar entrada
+      ctx.fillStyle = '#facc15';
+      ctx.shadowBlur = 4;
+      const postRadius = tileSize * 0.12;
+      ctx.beginPath();
+      ctx.arc(doorX - 2, startY + tileSize * 0.5, postRadius, 0, Math.PI * 2);
+      ctx.arc(doorX + tileSize + 2, startY + tileSize * 0.5, postRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Flechas animadas hacia abajo (▼) para que sea 100% obvio el camino
+      const arrowOffsetY = (Math.sin(animTimer * 10) + 1) * (tileSize * 0.1);
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 10;
+      ctx.font = `bold ${Math.max(10, Math.floor(tileSize * 0.6))}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('▼', doorX + tileSize / 2, startY + tileSize * 0.45 + arrowOffsetY);
+
+      // 4. PUERTA ENTRADA PRINCIPAL VIP (ILUMINADA Y DESTACADA)
+      // Marco de puerta dorado gigante
+      ctx.strokeStyle = '#facc15';
+      ctx.shadowColor = '#facc15';
+      ctx.shadowBlur = 18;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(doorX - 1, doorY - 1, tileSize + 2, tileSize + 2);
+
+      // Puertas batientes doradas de la entrada
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(doorX, doorY, tileSize, tileSize);
+
+      // Detalle cristalera / hojas de puerta
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(doorX + 2, doorY + 2, (tileSize / 2) - 3, tileSize - 4);
+      ctx.fillRect(doorX + (tileSize / 2) + 1, doorY + 2, (tileSize / 2) - 3, tileSize - 4);
+
+      // Pomos dorados
+      ctx.fillStyle = '#fef08a';
+      ctx.shadowBlur = 5;
+      ctx.beginPath();
+      ctx.arc(doorX + (tileSize / 2) - 2, doorY + tileSize / 2, 2, 0, Math.PI * 2);
+      ctx.arc(doorX + (tileSize / 2) + 2, doorY + tileSize / 2, 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
     }
 
     function drawKikeHead(cx, cy, size, dX, dY) {
@@ -1055,7 +1362,7 @@
       ctx.restore();
     }
 
-    // Event Listeners
+    // Event Listeners y Controles
     document.getElementById('start-game-btn').addEventListener('click', () => {
       startGame(1);
     });
