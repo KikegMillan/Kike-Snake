@@ -33,7 +33,6 @@
       font-family: 'Press Start 2P', monospace;
     }
 
-    /* Respetar las safe areas de móviles al mínimo */
     .safe-padding {
       padding-top: max(0.1rem, env(safe-area-inset-top));
       padding-bottom: max(0.1rem, env(safe-area-inset-bottom));
@@ -55,7 +54,6 @@
       text-shadow: 0 0 10px currentColor;
     }
 
-    /* Estilos Neón Cyberpunk / Retro Arcade para Botones Direccionales */
     .neon-btn {
       background: linear-gradient(180deg, #18182b 0%, #0a0a16 100%);
       border: 2px solid var(--neon-border, #06b6d4);
@@ -75,7 +73,6 @@
       overscroll-behavior: none;
     }
 
-    /* Efecto Flash Neón Synthwave */
     @keyframes neonFlash {
       0% { opacity: 1; filter: brightness(2.5) contrast(1.5); }
       100% { opacity: 0; filter: brightness(1); }
@@ -83,6 +80,20 @@
 
     .flash-overlay {
       animation: neonFlash 0.35s ease-out forwards;
+    }
+
+    /* Animación de sacudida para el canvas al chocar */
+    @keyframes screenShake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-6px, 6px) rotate(-1deg); }
+      40% { transform: translate(6px, -6px) rotate(1deg); }
+      60% { transform: translate(-4px, -4px) rotate(-0.5deg); }
+      80% { transform: translate(4px, 4px) rotate(0.5deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    .shake {
+      animation: screenShake 0.35s ease-in-out;
     }
   </style>
 </head>
@@ -93,7 +104,7 @@
     <!-- Flash Overlay para transiciones Neón Synthwave -->
     <div id="flash-effect" class="pointer-events-none absolute inset-0 bg-white z-50 opacity-0"></div>
 
-    <!-- Encabezado y Marcador Compacto con Cervezas, Vinos y Tartas -->
+    <!-- Encabezado y Marcador Compacto -->
     <div id="header-bar" class="w-full flex items-center justify-between px-2 py-1 bg-gray-900/90 border-2 border-cyan-500 rounded-xl z-10 shrink-0 transition-all duration-500">
       <div class="text-left">
         <span id="level-indicator" class="text-[8px] sm:text-[9px] text-pink-400 block tracking-tight font-bold">NIVEL 1</span>
@@ -102,25 +113,21 @@
 
       <!-- Contadores de Consumibles Recolectados -->
       <div class="flex items-center gap-1">
-        <!-- Cerveza -->
         <div id="beer-indicator" class="flex items-center gap-0.5 px-1 py-0.5 bg-gray-800/90 border border-amber-500/40 rounded-lg opacity-40 transition-all" title="Cervezas">
           <span class="text-lg leading-none">🍺</span>
           <span id="beer-count" class="text-xs text-yellow-400 font-bold">x0</span>
         </div>
 
-        <!-- Vino -->
         <div id="wine-indicator" class="flex items-center gap-0.5 px-1 py-0.5 bg-gray-800/90 border border-rose-500/40 rounded-lg opacity-40 transition-all" title="Vinos">
           <span class="text-lg leading-none">🍷</span>
           <span id="wine-count" class="text-xs text-rose-400 font-bold">x0</span>
         </div>
 
-        <!-- Tarta -->
         <div id="cake-indicator" class="flex items-center gap-0.5 px-1 py-0.5 bg-gray-800/90 border border-purple-500/40 rounded-lg opacity-40 transition-all" title="Tartas">
           <span class="text-lg leading-none">🎂</span>
           <span id="cake-count" class="text-xs text-purple-400 font-bold">x0</span>
         </div>
 
-        <!-- Botón Silenciar -->
         <button id="mute-btn" class="p-1 ml-0.5 bg-gray-800 active:bg-gray-700 text-xs rounded-lg border border-gray-600">
           🔊
         </button>
@@ -141,10 +148,10 @@
         <div class="p-2 bg-gray-900/90 border border-pink-500/50 rounded-lg w-full max-w-xs">
           <div class="text-xl mb-1">🕺🍺🍷🎂5️⃣0️⃣</div>
           <p class="text-[9px] sm:text-[10px] text-gray-300 leading-tight">
-      La gente está muy perdida...<br><br>
-      Ayuda a <span class="text-yellow-400 font-bold">KIKE</span> a reunir bebidas y tartas para el cumple. Así los amigos empezarán a seguirle.<br><br>
-      Utiliza los <span class="text-red-400 font-bold">dedos</span> para guiar a <span class="text-yellow-400 font-bold">KIKE</span> sin estrellarse.<br><br>
-      Alcanza <span class="text-green-400 font-bold">200</span> puntos para abrir la puerta del <span class="text-pink-400 font-bold">PUB</span> y lleva allí a todo el grupo sano y salvo para avanzar al siguiente y definitivo nivel!
+            La gente está muy perdida...<br><br>
+            Ayuda a <span class="text-yellow-400 font-bold">KIKE</span> a reunir bebidas y tartas para el cumple. Así los amigos empezarán a seguirle.<br><br>
+            ¡Cuidado! Si chocas, saltarán los chispazos y trozos de fiesta por todo el tablero.<br><br>
+            Alcanza <span class="text-green-400 font-bold">200</span> puntos para abrir la puerta del <span class="text-pink-400 font-bold">PUB</span> y entra con todo el grupo.
           </p>
         </div>
 
@@ -153,7 +160,7 @@
         </button>
       </div>
 
-      <!-- Overlay Pantalla Fin de Juego / Transición Nivel / Victoria -->
+      <!-- Overlay Pantalla Fin de Juego / Victoria -->
       <div id="end-overlay" class="hidden absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-2.5 z-40 text-center gap-1.5 overflow-y-auto">
         <div class="w-full flex flex-col items-center">
           <h2 id="end-title" class="text-base sm:text-lg text-yellow-400 glow-text mb-0.5">¡VICTORIA!</h2>
@@ -255,6 +262,7 @@
     let winesCollected = 0;
     let cakesCollected = 0;
     let isGameRunning = false;
+    let isGameOverAnim = false; // Nueva bandera durante animación de explosión
     let isEnteringDoor = false;
     let lastTime = 0;
     let animTimer = 0;
@@ -275,6 +283,10 @@
     let snakeLength = 3;
     let pathHistory = [];
     let guestList = [];
+
+    // Sistema de Partículas y Manchas de Sangre
+    let goreParticles = [];
+    let bloodSplatters = [];
 
     const GUEST_DESIGNS = [
       { hair: '#facc15', skin: '#ffdbac', shirt: '#ec4899', pants: '#1e293b', style: 'blonde_girl' },
@@ -339,7 +351,7 @@
 
       let step = 0;
       musicInterval = setInterval(() => {
-        if (!isGameRunning || isMuted) return;
+        if (!isGameRunning || isMuted || isGameOverAnim) return;
         playSound(synthNotes[step % synthNotes.length], 0.09, 'sawtooth');
         step++;
       }, tempo);
@@ -379,6 +391,30 @@
           setTimeout(() => playSound(f, 0.15, 'square'), i * 80);
         });
       } catch (e) {}
+    }
+
+    function playGoreSound() {
+      if (isMuted || !audioCtx) return;
+      try {
+        // Ruido sordo y explosión retro de baja frecuencia para el aplastamiento y despiece
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.4);
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+
+        // Agudo tipo salpicadura
+        setTimeout(() => {
+          playSound(800, 0.1, 'square');
+          playSound(250, 0.25, 'sawtooth');
+        }, 50);
+      } catch(e){}
     }
 
     function playGameOverSound() {
@@ -546,6 +582,9 @@
       hasBeerInHand = false;
       barDoor = null;
       isEnteringDoor = false;
+      isGameOverAnim = false;
+      goreParticles = [];
+      bloodSplatters = [];
 
       guestList = [];
       for (let i = 0; i < 50; i++) {
@@ -616,18 +655,23 @@
     }
 
     function setDirection(dx, dy) {
-      if (isEnteringDoor || (dx === -dirX && dy === -dirY)) return;
+      if (isEnteringDoor || isGameOverAnim || (dx === -dirX && dy === -dirY)) return;
       nextDirX = dx;
       nextDirY = dy;
     }
 
     function gameLoop(time) {
-      if (!isGameRunning) return;
+      if (!isGameRunning && !isGameOverAnim) return;
       const dt = Math.min((time - lastTime) / 1000, 0.1);
       lastTime = time;
 
       animTimer += dt;
-      updateContinuous(dt);
+
+      if (isGameRunning && !isGameOverAnim) {
+        updateContinuous(dt);
+      }
+      
+      updateGore(dt);
       render();
 
       requestAnimationFrame(gameLoop);
@@ -687,14 +731,16 @@
       }
 
       if (gx < 0 || gx >= GRID_COLS || gy < 0 || gy >= GRID_ROWS) {
-        handleGameOver("¡Insensato!!! <br><br> ¡Los has estrellado a todos!!");
+        triggerGoreExplosion();
+        handleGameOver("¡Insensato!!! <br><br> ¡Has estampado al grupo contra las paredes!!");
         return true;
       }
 
       const playAreaRows = (barDoor && barDoor.isOpen) ? (EXTENDED_GRID_ROWS - 3) : GRID_ROWS;
       if (barDoor && barDoor.isOpen && gy >= playAreaRows) {
         if (gx !== barDoor.x1 && gx !== barDoor.x2) {
-          handleGameOver("¡Pero amigo!!!! <br><br> ¿Qué es eso de entrar al bar por las paredes!??<br><br>¡Entra por la puerta por favor!!!!");
+          triggerGoreExplosion();
+          handleGameOver("¡Pero amigo!!!! <br><br> ¿Qué es eso de entrar al bar atravesando el muro!??<br><br>¡Entra por la puerta por favor!!!!");
           return true;
         }
       }
@@ -702,7 +748,8 @@
       const bodyPositions = getBodyGridPositions();
       for (let i = 1; i < bodyPositions.length; i++) {
         if (bodyPositions[i].x === gx && bodyPositions[i].y === gy) {
-          handleGameOver("¡KIKE se ha tropezado con su propia cola!<br><br>Esto es un caos de muerte y destrucción...");
+          triggerGoreExplosion();
+          handleGameOver("¡KIKE se ha tropezado brutalmente con su propia cola!<br><br>Esto ha acabado en una masacre festiva...");
           return true;
         }
       }
@@ -747,6 +794,188 @@
       }
 
       return false;
+    }
+
+    // LÓGICA DE EXPLOSIÓN Y DESPIECE AL CHOCAR
+    function triggerGoreExplosion() {
+      playGoreSound();
+      
+      // Añadir sacudida a la interfaz
+      canvasWrapper.classList.remove('shake');
+      void canvasWrapper.offsetWidth;
+      canvasWrapper.classList.add('shake');
+
+      // 1. Despiece de KIKE (Cabeza)
+      const hX = headX * tileSize + tileSize / 2;
+      const hY = headY * tileSize + tileSize / 2;
+
+      // Partes del cuerpo de Kike: Cabeza, Torso '50', extremidades y gafas
+      const kikeParts = [
+        { type: 'kike_head', color: '#ffdbac', radius: tileSize * 0.35 },
+        { type: 'kike_torso', color: '#dc2626', radius: tileSize * 0.4 },
+        { type: 'glasses', color: '#111827', radius: tileSize * 0.2 },
+        { type: 'arm', color: '#ffdbac', radius: tileSize * 0.15 },
+        { type: 'arm', color: '#ffdbac', radius: tileSize * 0.15 },
+        { type: 'leg', color: '#1e293b', radius: tileSize * 0.18 },
+        { type: 'leg', color: '#1e293b', radius: tileSize * 0.18 }
+      ];
+
+      if (hasBeerInHand) {
+        kikeParts.push({ type: 'beer_mug', color: '#f59e0b', radius: tileSize * 0.25 });
+      }
+
+      kikeParts.forEach(part => {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (Math.random() * 120 + 60);
+        goreParticles.push({
+          x: hX,
+          y: hY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          rot: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 12,
+          color: part.color,
+          type: part.type,
+          size: part.radius,
+          friction: 0.96,
+          gravity: 120
+        });
+      });
+
+      // Partículas de Sangre saliendo disparadas de Kike
+      for (let i = 0; i < 35; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = (Math.random() * 180 + 40);
+        goreParticles.push({
+          x: hX,
+          y: hY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          rot: 0,
+          vRot: 0,
+          color: Math.random() > 0.3 ? '#b91c1c' : '#ef4444',
+          type: 'blood_drop',
+          size: Math.random() * 4 + 2,
+          friction: 0.94,
+          gravity: 150
+        });
+      }
+
+      // 2. Aplastamiento y despiece de TODOS los seguidores
+      for (let i = 1; i < snakeLength; i++) {
+        const pos = getPositionAtDistance(i * 1.0);
+        const sx = pos.x * tileSize + tileSize / 2;
+        const sy = pos.y * tileSize + tileSize / 2;
+        const guest = guestList[(i - 1) % guestList.length] || GUEST_DESIGNS[0];
+
+        // Ropa, cabeza, miembros
+        const guestParts = [
+          { color: guest.skin, size: tileSize * 0.25, type: 'guest_head' },
+          { color: guest.shirt, size: tileSize * 0.3, type: 'guest_shirt' },
+          { color: guest.pants, size: tileSize * 0.2, type: 'guest_limb' },
+          { color: guest.hair, size: tileSize * 0.2, type: 'guest_hair' }
+        ];
+
+        guestParts.forEach(gp => {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = (Math.random() * 90 + 30);
+          goreParticles.push({
+            x: sx,
+            y: sy,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            rot: Math.random() * Math.PI * 2,
+            vRot: (Math.random() - 0.5) * 10,
+            color: gp.color,
+            type: gp.type,
+            size: gp.size,
+            friction: 0.95,
+            gravity: 110
+          });
+        });
+
+        // Chorro de sangre de cada invitado aplastado
+        for (let b = 0; b < 12; b++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = (Math.random() * 130 + 30);
+          goreParticles.push({
+            x: sx,
+            y: sy,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            rot: 0,
+            vRot: 0,
+            color: '#991b1b',
+            type: 'blood_drop',
+            size: Math.random() * 3.5 + 1.5,
+            friction: 0.93,
+            gravity: 140
+          });
+        }
+
+        // Manchas de sangre aplastada en las casillas correspondientes
+        const bloodGridX = Math.floor(sx / tileSize);
+        const bloodGridY = Math.floor(sy / tileSize);
+        bloodSplatters.push({
+          x: (bloodGridX + 0.5) * tileSize,
+          y: (bloodGridY + 0.5) * tileSize,
+          radius: tileSize * (0.3 + Math.random() * 0.35),
+          seed: Math.random()
+        });
+      }
+
+      // Mancha principal de impacto en KIKE
+      const kikeGridX = Math.floor(hX / tileSize);
+      const kikeGridY = Math.floor(hY / tileSize);
+      bloodSplatters.push({
+        x: (kikeGridX + 0.5) * tileSize,
+        y: (kikeGridY + 0.5) * tileSize,
+        radius: tileSize * 0.65,
+        seed: Math.random()
+      });
+
+      // Dejar casillas contiguas ensangrentadas al azar
+      const neighbors = [
+        { x: kikeGridX + 1, y: kikeGridY },
+        { x: kikeGridX - 1, y: kikeGridY },
+        { x: kikeGridX, y: kikeGridY + 1 },
+        { x: kikeGridX, y: kikeGridY - 1 }
+      ];
+
+      neighbors.forEach(n => {
+        if (n.x >= 0 && n.x < GRID_COLS && n.y >= 0 && n.y < GRID_ROWS && Math.random() > 0.3) {
+          bloodSplatters.push({
+            x: (n.x + 0.5) * tileSize,
+            y: (n.y + 0.5) * tileSize,
+            radius: tileSize * (0.2 + Math.random() * 0.3),
+            seed: Math.random()
+          });
+        }
+      });
+    }
+
+    function updateGore(dt) {
+      for (let i = goreParticles.length - 1; i >= 0; i--) {
+        const p = goreParticles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += p.gravity * dt;
+        p.vx *= p.friction;
+        p.vy *= p.friction;
+        p.rot += p.vRot * dt;
+
+        // Si la gota cae al suelo/casilla, crear pequeña mancha extra
+        if (p.type === 'blood_drop' && Math.random() < 0.08) {
+          if (p.x >= 0 && p.x <= canvas.width && p.y >= 0 && p.y <= canvas.height) {
+            bloodSplatters.push({
+              x: p.x,
+              y: p.y,
+              radius: p.size * 0.8,
+              seed: Math.random()
+            });
+          }
+        }
+      }
     }
 
     function getPositionAtDistance(targetDist) {
@@ -798,8 +1027,7 @@
         endIcon.textContent = "🚪🍺🍷🎂";
         endSubtitleContainer.className = "my-0.5 p-1.5 bg-blue-950/80 border border-cyan-500/80 rounded-lg w-full max-w-xs shadow-lg";
         endSubtitle.className = "text-xs text-cyan-400";
-        endSubtitle.textContent = "¡HAS SALVADO A MUCHOS AMIGOS LLEVÁNDOLOS AL BAR!   PERO AÚN HAY MÁS AHÍ FUERA!!! PREPÁRATE PARA EL NIVEL 2...";
-        
+        endSubtitle.textContent = "¡HAS SALVADO A MUCHOS AMIGOS LLEVÁNDOLOS AL BAR! PERO AÚN HAY MÁS AHÍ FUERA!!! PREPÁRATE PARA EL NIVEL 2...";
         
         infoBox.classList.remove('hidden');
         infoTitle.textContent = "📍 INFORMACIÓN DE NIVEL 1 📍";
@@ -833,7 +1061,7 @@
           <p class="text-center text-cyan-300"><strong>METRO BILBAO</strong></p>
           <p class="text-center text-pink-400">Barra libre de cervezas, vinos y refrescos durante 3 horas. Copas a 6,50€ pero ya son por tu cuenta. Cena picoteo durante el evento.</p>
         `;
-        infoFooter.textContent = "Habrá bebida y comida para celíacos. Local cerrado en exculiva para la fiesta hasta las 03:30. ¡Esperamos celebrar este gran 50 cumpleaños por todo lo alto!";
+        infoFooter.textContent = "Habrá bebida y comida para celíacos. Local cerrado en exclusiva para la fiesta hasta las 03:30. ¡Esperamos celebrar este gran 50 cumpleaños por todo lo alto!";
 
         const btn = document.getElementById('restart-btn');
         btn.textContent = "VOLVER A JUGAR 🔄";
@@ -845,28 +1073,32 @@
 
     function handleGameOver(reason) {
       isGameRunning = false;
+      isGameOverAnim = true;
       stopMusic();
-      playGameOverSound();
 
-      endTitle.textContent = "GAME OVER";
-      endTitle.className = "text-lg sm:text-xl text-red-500 glow-text mb-0.5 animate-bounce";
-      endIcon.textContent = "💥🚶‍♂️❌";
-      endSubtitleContainer.className = "my-0.5 p-1.5 bg-red-950/90 border border-red-500 rounded-lg w-full max-w-xs shadow-2xl";
-      endSubtitle.className = "text-xs text-cyan-400"
-      endSubtitle.innerHTML = `${reason}<br><br><span class="text-yellow-300">PUNTUACIÓN FINAL:</span> ${score} PTS`;
+      // Dejar 2.5 segundos para disfrutar del espectáculo de sangre, miembros volando y piezas desparramadas
+      setTimeout(() => {
+        isGameOverAnim = false;
+        endTitle.textContent = "GAME OVER";
+        endTitle.className = "text-lg sm:text-xl text-red-500 glow-text mb-0.5 animate-bounce";
+        endIcon.textContent = "💥🚶‍♂️❌";
+        endSubtitleContainer.className = "my-0.5 p-1.5 bg-red-950/90 border border-red-500 rounded-lg w-full max-w-xs shadow-2xl";
+        endSubtitle.className = "text-xs text-cyan-400";
+        endSubtitle.innerHTML = `${reason}<br><br><span class="text-yellow-300">PUNTUACIÓN FINAL:</span> ${score} PTS`;
 
-      infoBox.classList.add('hidden');
+        infoBox.classList.add('hidden');
 
-      const btn = document.getElementById('restart-btn');
-      btn.textContent = "REINTENTAR 🔄";
-      
-      if (currentLevel === 2) {
-        btn.onclick = () => startGame(2);
-      } else {
-        btn.onclick = () => startGame(1);
-      }
+        const btn = document.getElementById('restart-btn');
+        btn.textContent = "REINTENTAR 🔄";
+        
+        if (currentLevel === 2) {
+          btn.onclick = () => startGame(2);
+        } else {
+          btn.onclick = () => startGame(1);
+        }
 
-      endOverlay.classList.remove('hidden');
+        endOverlay.classList.remove('hidden');
+      }, 2500);
     }
 
     function drawPartyGuest(cx, cy, size, guest, scaleFactor, animOffset) {
@@ -1030,6 +1262,27 @@
         ctx.stroke();
       }
 
+      // Dibujar manchas de sangre persistentes en el suelo
+      for (let i = 0; i < bloodSplatters.length; i++) {
+        const b = bloodSplatters[i];
+        ctx.save();
+        ctx.fillStyle = 'rgba(153, 27, 27, 0.85)';
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Gotas satélite alrededor de la mancha principal
+        ctx.fillStyle = 'rgba(185, 28, 28, 0.7)';
+        for (let k = 0; k < 4; k++) {
+          const angle = b.seed * 10 + k * (Math.PI / 2);
+          const dist = b.radius * 0.85;
+          ctx.beginPath();
+          ctx.arc(b.x + Math.cos(angle) * dist, b.y + Math.sin(angle) * dist, b.radius * 0.35, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
       if (isBarActive) {
         drawSynthwaveBarFacade(playAreaRows);
       }
@@ -1055,37 +1308,83 @@
         ctx.restore();
       }
 
-      for (let i = snakeLength - 1; i >= 1; i--) {
-        const pos = getPositionAtDistance(i * 1.0);
-        const sx = pos.x * tileSize + tileSize / 2;
-        const sy = pos.y * tileSize + tileSize / 2;
+      // Renderizar cuerpo del grupo (si no estamos en Game Over animado)
+      if (!isGameOverAnim) {
+        for (let i = snakeLength - 1; i >= 1; i--) {
+          const pos = getPositionAtDistance(i * 1.0);
+          const sx = pos.x * tileSize + tileSize / 2;
+          const sy = pos.y * tileSize + tileSize / 2;
 
-        let scaleFactor = 1.0;
-        const totalBodySegments = snakeLength - 1;
-        const distanceFromEnd = totalBodySegments - i;
+          let scaleFactor = 1.0;
+          const totalBodySegments = snakeLength - 1;
+          const distanceFromEnd = totalBodySegments - i;
 
-        if (distanceFromEnd === 0) {
-          scaleFactor = 0.65;
-        } else if (distanceFromEnd === 1) {
-          scaleFactor = 0.77;
-        } else if (distanceFromEnd === 2) {
-          scaleFactor = 0.88;
+          if (distanceFromEnd === 0) {
+            scaleFactor = 0.65;
+          } else if (distanceFromEnd === 1) {
+            scaleFactor = 0.77;
+          } else if (distanceFromEnd === 2) {
+            scaleFactor = 0.88;
+          }
+
+          const guestDesign = (guestList && guestList.length > 0) 
+            ? guestList[(i - 1) % guestList.length] 
+            : GUEST_DESIGNS[0];
+
+          if (guestDesign) {
+            drawPartyGuest(sx, sy, tileSize, guestDesign, scaleFactor, i * 0.5);
+          }
         }
 
-        const guestDesign = (guestList && guestList.length > 0) 
-          ? guestList[(i - 1) % guestList.length] 
-          : GUEST_DESIGNS[0];
-
-        if (guestDesign) {
-          drawPartyGuest(sx, sy, tileSize, guestDesign, scaleFactor, i * 0.5);
+        if (snakeLength > 0) {
+          const hsx = headX * tileSize + tileSize / 2;
+          const hsy = headY * tileSize + tileSize / 2;
+          drawKikeHead(hsx, hsy, tileSize * 1.1, dirX, dirY);
         }
       }
 
-      if (snakeLength > 0) {
-        const hsx = headX * tileSize + tileSize / 2;
-        const hsy = headY * tileSize + tileSize / 2;
+      // Renderizar piezas volantes y gotas de sangre desmembradas
+      for (let i = 0; i < goreParticles.length; i++) {
+        const p = goreParticles[i];
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
 
-        drawKikeHead(hsx, hsy, tileSize * 1.1, dirX, dirY);
+        if (p.type === 'kike_head') {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#451a03';
+          ctx.beginPath();
+          ctx.arc(0, -p.size * 0.2, p.size, Math.PI * 1.1, Math.PI * 1.9);
+          ctx.fill();
+        } else if (p.type === 'kike_torso') {
+          ctx.beginPath();
+          ctx.roundRect(-p.size, -p.size, p.size * 2, p.size * 2, 3);
+          ctx.fill();
+          ctx.fillStyle = '#facc15';
+          ctx.font = `bold ${Math.max(5, Math.floor(p.size))}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('50', 0, 0);
+        } else if (p.type === 'glasses') {
+          ctx.fillStyle = '#111827';
+          ctx.fillRect(-p.size, -p.size * 0.4, p.size * 2, p.size * 0.8);
+          ctx.fillStyle = '#06b6d4';
+          ctx.fillRect(-p.size * 0.8, -p.size * 0.2, p.size * 0.6, p.size * 0.4);
+          ctx.fillRect(p.size * 0.2, -p.size * 0.2, p.size * 0.6, p.size * 0.4);
+        } else if (p.type === 'beer_mug') {
+          ctx.fillRect(-p.size * 0.5, -p.size * 0.8, p.size, p.size * 1.6);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(-p.size * 0.5, -p.size * 0.8, p.size, p.size * 0.4);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
       }
     }
 
