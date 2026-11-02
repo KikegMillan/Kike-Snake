@@ -144,7 +144,7 @@
       La gente está muy perdida...<br><br>
       Ayuda a <span class="text-yellow-400 font-bold">KIKE</span> a reunir bebidas y tartas para el cumple. Así los amigos empezarán a seguirle.<br><br>
       Utiliza los <span class="text-red-400 font-bold">dedos</span> para guiar a <span class="text-yellow-400 font-bold">KIKE</span> sin estrellarse.<br><br>
-      Alcanza <span class="text-green-400 font-bold">150</span> puntos para abrir la puerta del <span class="text-pink-400 font-bold">PUB</span> y lleva allí a todo el grupo sano y salvo para avanzar al siguiente y definitivo nivel!
+      Alcanza <span class="text-green-400 font-bold">200</span> puntos para abrir la puerta del <span class="text-pink-400 font-bold">PUB</span> y lleva allí a todo el grupo sano y salvo para avanzar al siguiente y definitivo nivel!
           </p>
         </div>
 
@@ -163,8 +163,8 @@
           </div>
         </div>
 
-        <div id="info-box" class="w-full max-w-xs p-1.5 bg-gray-900/90 border border-yellow-400 rounded-lg text-left space-y-0.5 text-[9px] leading-tight">
-          <p id="info-title" class="text-yellow-300 font-bold text-center text-[10px] mb-0.5">📍 INFORMACIÓN DE LA FIESTA 📍</p>
+        <div id="info-box" class="w-full max-w-xs p-1.5 bg-gray-900/90 border border-yellow-400 rounded-lg text-left space-y-0.5 text-[11px] leading-tight">
+          <p id="info-title" class="text-yellow-300 font-bold text-center text-[12px] mb-0.5">📍 INFORMACIÓN DE LA FIESTA 📍</p>
           <div id="info-content" class="space-y-0.5 text-gray-200">
             <p>📅 <strong>Fecha:</strong> Sábado, 14 NOV</p>
             <p>⏰ <strong>Hora:</strong> 21:30h</p>
@@ -172,7 +172,7 @@
             <p class="text-center text-cyan-300"><strong>METRO BILBAO</strong></p>
             <p class="text-center text-pink-400">Dress code: Synthwave 80s</p>
           </div>
-          <p id="info-footer" class="text-[8px] text-center text-emerald-400 animate-pulse leading-relaxed pt-0.5">
+          <p id="info-footer" class="text-[10px] text-center text-emerald-400 animate-pulse leading-relaxed pt-0.5">
             ¡Prepárate para la gran celebración de los 50!
           </p>
         </div>
@@ -195,8 +195,8 @@
 
     // Puntuación objetivo por niveles
     const LEVEL_TARGETS = {
-      1: 120,
-      2: 200
+      1: 200,
+      2: 150
     };
 
     // Paletas Neón Synthwave
@@ -250,7 +250,7 @@
     let beersAtLevel1Finish = 0;
     let winesAtLevel1Finish = 0;
     let cakesAtLevel1Finish = 0;
-    let levelTargetScore = 120;
+    let levelTargetScore = 200;
     let beersCollected = 0;
     let winesCollected = 0;
     let cakesCollected = 0;
@@ -702,7 +702,7 @@
       const bodyPositions = getBodyGridPositions();
       for (let i = 1; i < bodyPositions.length; i++) {
         if (bodyPositions[i].x === gx && bodyPositions[i].y === gy) {
-          handleGameOver("¡Kike se ha tropezado con su propia cola!<br><br>Esto es un caos de muerte y destrucción...");
+          handleGameOver("¡KIKE se ha tropezado con su propia cola!<br><br>Esto es un caos de muerte y destrucción...");
           return true;
         }
       }
@@ -797,14 +797,16 @@
         endTitle.className = "text-lg sm:text-xl text-yellow-400 glow-text mb-0.5";
         endIcon.textContent = "🚪🍺🍷🎂";
         endSubtitleContainer.className = "my-0.5 p-1.5 bg-blue-950/80 border border-cyan-500/80 rounded-lg w-full max-w-xs shadow-lg";
+        endSubtitle.className = "text-xs text-cyan-400";
         endSubtitle.textContent = "¡HAS SALVADO A MUCHOS AMIGOS LLEVÁNDOLOS AL BAR!   PERO AÚN HAY MÁS AHÍ FUERA!!! PREPÁRATE PARA EL NIVEL 2...";
+        
         
         infoBox.classList.remove('hidden');
         infoTitle.textContent = "📍 INFORMACIÓN DE NIVEL 1 📍";
         infoContent.innerHTML = `
           <p class="text-center text-cyan-300 font-bold">PUNTUACIÓN ACTUAL: ${score} PTS</p>
           <p class="text-center text-yellow-400 text-[8px] my-0.5">🍺 x${beersCollected} | 🍷 x${winesCollected} | 🎂 x${cakesCollected}</p>
-          <p class="text-center text-pink-400 mt-1">Siguiente objetivo: Conseguir 200 PTS más (Alcanzar ${score + LEVEL_TARGETS[2]} PTS) en el Nivel 2.</p>
+          <p class="text-center text-pink-400 mt-1">Siguiente objetivo: Conseguir 150 PTS más (Alcanzar ${score + LEVEL_TARGETS[2]} PTS) en el Nivel 2.</p>
         `;
         infoFooter.textContent = "Pulsa el botón para continuar la fiesta en el Nivel 2";
 
@@ -827,7 +829,7 @@
         infoContent.innerHTML = `
           <p>📅 <strong>Fecha:</strong> Sábado, 14 NOV</p>
           <p>⏰ <strong>Hora:</strong> 21:30h</p>
-          <p>🏢 <strong>Lugar:</strong> C/ Eguilaz 10</p>
+          <p>🏢 <strong>Lugar:</strong> C/ Eguilaz, 10</p>
           <p class="text-center text-cyan-300"><strong>METRO BILBAO</strong></p>
           <p class="text-center text-pink-400">Barra libre de cervezas, vinos y refrescos durante 3 horas. Copas a 6,50€ pero ya son por tu cuenta. Cena picoteo durante el evento.</p>
         `;
@@ -850,6 +852,7 @@
       endTitle.className = "text-lg sm:text-xl text-red-500 glow-text mb-0.5 animate-bounce";
       endIcon.textContent = "💥🚶‍♂️❌";
       endSubtitleContainer.className = "my-0.5 p-1.5 bg-red-950/90 border border-red-500 rounded-lg w-full max-w-xs shadow-2xl";
+      endSubtitle.className = "text-xs text-cyan-400"
       endSubtitle.innerHTML = `${reason}<br><br><span class="text-yellow-300">PUNTUACIÓN FINAL:</span> ${score} PTS`;
 
       infoBox.classList.add('hidden');
